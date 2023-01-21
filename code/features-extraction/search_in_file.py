@@ -19,33 +19,24 @@ JS_LANGUAGE = Language('build/my-languages.so', 'javascript')
 parser = Parser()
 parser.set_language(JS_LANGUAGE)
 
-# Open the file using the open() function, specifying the mode as 'r' for reading.
-file_name = 'code'
-file = open(file_name + '.js', 'r')
+def parse_file(file_name):
+    # Open the file using the open() function, specifying the mode as 'r' for reading.
+    file = open(file_name + '.js', 'r')
+    # Read the contents of the file using the read() method
+    code = file.read()
+    # Parse the file and get the syntax tree
+    tree = parser.parse(bytes(code, 'utf-8'))
+    root_node = tree.root_node
+    return root_node
 
-# Read the contents of the file using the read() method
-code = file.read()
-
-# Parse the file and get the syntax tree
-tree = parser.parse(bytes(code, 'utf-8'))
-root_node = tree.root_node
-
-def search_code(root_node, search_string):
+def search_keyword_in_code(root_node, search_string):
     found = False
     for child in root_node.children:
         if child.text.decode() == search_string:
             found = True
             break
         else:
-            found = search_code(child, search_string)
+            found = search_keyword_in_code(child, search_string)
             if found:
                 break
     return found
-
-# Traverse the syntax tree and check for the specific line of code
-search_string = 'require("socket.io")'
-
-if search_code(root_node, search_string):
-    print("Line found!")
-else:
-    print("Line not found.")
