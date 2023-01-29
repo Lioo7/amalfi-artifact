@@ -30,6 +30,11 @@ file_name = 'js_code_example'
 root_node = parse_file(file_name)
   
 def search_PII(root_node) -> None:
+    """
+    TODO:
+    * current situation: have only two keywords
+    * what to improve: have more keywords after the data exploration
+    """
     logging.info("start func: search_PII")
     keywords = ['screenshot', ['keypress', 'POST']]
     # Traverse the syntax tree and check for the specific line of code
