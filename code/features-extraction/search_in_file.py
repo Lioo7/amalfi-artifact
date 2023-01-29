@@ -39,33 +39,38 @@ def parse_file(file_name):
     return root_node
 
 def search_keyword_in_code(root_node, keywords, sub_keywords)->bool:
-    logging.info(f"start func: search_keyword_in_code")
-    found = False
-    
-    for child in root_node.children:
-      # search if the child in one of the keywords
-      logging.debug(f"child: {child.text.decode()}")
-      if child.text.decode() in keywords:
-          found = True
-          logging.info(f"keyword found!\nThe keyword that found is: {child.text.decode()}")
-          break
-      # search if the child in one of the sub keywords
-      elif found == False:
-        for inner_keyword in sub_keywords.values():
-          # logging.debug(f"second loop, inner_keyword: {inner_keyword}")
-          if child.text.decode() in inner_keyword[0]:
-            logging.info(f"sub keyword found!\nThe keyword that found is: {child.text.decode()}")
-            inner_keyword[1].append(child.text.decode())
-            if inner_keyword[1] == inner_keyword[0]:
-              logging.info(f"The entire sub keyword was found!\n{inner_keyword[1]} == {inner_keyword[0]}")
-              found = True
-              break
-      # recursion 
-      if found == False:
-          logging.debug("calling recursion")
-          found = search_keyword_in_code(child, keywords, sub_keywords)
-          if found:
-              break
-    
-    logging.debug(f"results of search_keyword_in_code: {found}")
-    return found
+  """
+  TODO:
+  * current situation: the function stoping after the function find the first match
+  * what to improve: have to add the function the ability to count the number of occurrences of all keywords
+  """
+  logging.info(f"start func: search_keyword_in_code")
+  found = False
+  
+  for child in root_node.children:
+    # search if the child in one of the keywords
+    logging.debug(f"child: {child.text.decode()}")
+    if child.text.decode() in keywords:
+        found = True
+        logging.info(f"keyword found!\nThe keyword that found is: {child.text.decode()}")
+        break
+    # search if the child in one of the sub keywords
+    elif found == False:
+      for inner_keyword in sub_keywords.values():
+        # logging.debug(f"second loop, inner_keyword: {inner_keyword}")
+        if child.text.decode() in inner_keyword[0]:
+          logging.info(f"sub keyword found!\nThe keyword that found is: {child.text.decode()}")
+          inner_keyword[1].append(child.text.decode())
+          if inner_keyword[1] == inner_keyword[0]:
+            logging.info(f"The entire sub keyword was found!\n{inner_keyword[1]} == {inner_keyword[0]}")
+            found = True
+            break
+    # recursion 
+    if found == False:
+        logging.debug("calling recursion")
+        found = search_keyword_in_code(child, keywords, sub_keywords)
+        if found:
+            break
+  
+  logging.debug(f"results of search_keyword_in_code: {found}")
+  return found
