@@ -1,5 +1,13 @@
 
 from search_in_file import parse_file, search_keyword_in_code
+import logging
+
+LOGֹ_FORMAT = "%(levelname)s, time: %(asctime)s , line: %(lineno)d- %(message)s "
+# create and configure logger
+logging.basicConfig(
+    filename="features-extraction-logging.log", level=logging.INFO, filemode="w"
+)
+logger = logging.getLogger()
 
 """
 Features list:
@@ -22,10 +30,17 @@ file_name = 'js_code_example'
 root_node = parse_file(file_name)
   
 def search_PII(root_node) -> None:
-    keywords = ['screenshot']
+    logging.info("start func: search_PII")
+    keywords = ['screenshot', ['keypress', 'POST']]
     # Traverse the syntax tree and check for the specific line of code
+    
+    sub_keywords = {} # {index of the sublist in keywords: keyword, [words that found]}
+    # for each sublist in keywords, add the index and the keyword
+    for index, keyword in enumerate(keywords):
+      if type(keyword) == list:
+        sub_keywords[index] = [keyword, []]
 
-    if search_keyword_in_code(root_node, keywords):
+    if search_keyword_in_code(root_node, keywords, sub_keywords):
         print("Line found!")
     else:
         print("Line not found.")
