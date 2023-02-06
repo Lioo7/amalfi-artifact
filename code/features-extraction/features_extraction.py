@@ -36,6 +36,38 @@ def search_PII(root_node) -> None:
     * what to improve: have more keywords after the data exploration
     """
     logging.info("start func: search_PII")
+    '''#(1)
+    creditcard numbers, passwords, and cookies
+    keywords = ['phone,creditcard,cookies,passwords,appData]
+    '''
+
+    '''#(2)a
+    File-system access: reading and writing files
+    keywords = ['read','write','file', 'require('fs')']
+
+    #(2)b
+    Process creation: spawning new processes
+    keywords = ['read','write','file']
+
+    (2)c
+    Process creation: spawning new processes
+    keywords = ['child_process','fork','exec']
+
+    (3)(a) Cryptographic functionality
+    keywords = ['crypto']
+
+    (3)(b) Data encoding using encodeURIComponent etc.
+    keywords = ['encodeURIComponent', 'querystring', 'qs', 'base64', 'btoa', 'atob', 'Buffer', 'JSON.stringify']
+
+    (3)(c) Dynamic code generation using eval, Function, etc.
+    keywords = ['eval', 'Function']
+
+    (4) Use of package installation scripts
+    keywords = ['npm install']
+
+    (5) Presence of minified code (to avoid detection) or binary files (such as binary executables)
+    keywords = ['Buffer']
+    '''
     keywords = ['screenshot', ['keypress', 'POST']]
     # Traverse the syntax tree and check for the specific line of code
     
