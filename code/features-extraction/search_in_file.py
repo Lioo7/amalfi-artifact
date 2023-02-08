@@ -8,6 +8,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger()
 
+"""
+TODO:
+* current situation: supports only JS
+* what to improve: have to add a support to TS as well
+"""
 # Use the Language.build_library method to compile these into a library that's usable from Python. 
 # This function will return immediately if the library has already been compiled since the last time its source code was modified
 Language.build_library(
