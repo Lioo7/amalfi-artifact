@@ -1,5 +1,6 @@
 
 from search_in_file import parse_file, search_keyword_in_code
+from calculate_entropy import extract_is_minified_feature
 import logging
 
 LOGֹ_FORMAT = "%(levelname)s, time: %(asctime)s , line: %(lineno)d- %(message)s "
@@ -82,4 +83,11 @@ def search_PII(root_node) -> None:
     else:
         print("Line not found.")
         
-search_PII(root_node)
+        
+def check_if_minified(directory_path):
+    is_minified = extract_is_minified_feature(directory_path)
+    print(is_minified)
+    
+if __name__ == '__main__':
+    # search_PII(root_node)
+    # check_if_minified(directory_path)
