@@ -204,6 +204,7 @@ poetry.toml
 .ruff_cache/
 
 # Packages files
+packages
 *.tgz
 
 # pdf

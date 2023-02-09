@@ -27,6 +27,33 @@ Single-version features:
 (5) Presence of minified code (to avoid detection) or binary files (such as binary executables)
 """
 
+"""
+TODO: Add more keywords, some explnation and create a function for each feature
+'''#(2)a
+File-system access: reading and writing files
+keywords = ['read','write','file', 'require('fs')']
+
+#(2)b
+Process creation: spawning new processes
+keywords = ['exec', 'spawn', 'fork', 'thread', 'process', 'child_process']
+
+(2)c
+Process creation: spawning new processes
+keywords = ['send']
+
+(3)(a) Cryptographic functionality
+keywords = ['crypto']
+
+(3)(b) Data encoding using encodeURIComponent etc.
+keywords = ['encodeURIComponent', 'querystring', 'qs', 'base64', 'btoa', 'atob', 'Buffer', 'JSON.stringify']
+
+(3)(c) Dynamic code generation using eval, Function, etc.
+keywords = ['eval', 'Function']
+
+(4) Use of package installation scripts
+keywords = ['preinstall', 'postinstall', 'npm install']
+"""
+
 file_name = 'js_code_example'
 root_node = parse_file(file_name)
   
@@ -37,41 +64,9 @@ def search_PII(root_node) -> None:
     * what to improve: have more keywords after the data exploration
     """
     logging.info("start func: search_PII")
-    '''#(1)
-    creditcard numbers, passwords, and cookies
-    keywords = ['phone,creditcard,cookies,passwords,appData]
-    '''
 
-    '''#(2)a
-    File-system access: reading and writing files
-    keywords = ['read','write','file', 'require('fs')']
-
-    #(2)b
-    Process creation: spawning new processes
-    keywords = ['read','write','file']
-
-    (2)c
-    Process creation: spawning new processes
-    keywords = ['child_process','fork','exec']
-
-    (3)(a) Cryptographic functionality
-    keywords = ['crypto']
-
-    (3)(b) Data encoding using encodeURIComponent etc.
-    keywords = ['encodeURIComponent', 'querystring', 'qs', 'base64', 'btoa', 'atob', 'Buffer', 'JSON.stringify']
-
-    (3)(c) Dynamic code generation using eval, Function, etc.
-    keywords = ['eval', 'Function']
-
-    (4) Use of package installation scripts
-    keywords = ['npm install']
-
-    (5) Presence of minified code (to avoid detection) or binary files (such as binary executables)
-    keywords = ['Buffer']
-    '''
-    keywords = ['screenshot', ['keypress', 'POST']]
+    keywords = ['screenshot', ['keypress', 'POST'], 'creditcard', 'cookies', 'passwords', 'appData']
     # Traverse the syntax tree and check for the specific line of code
-    
     sub_keywords = {} # {index of the sublist in keywords: keyword, [words that found]}
     # for each sublist in keywords, add the index and the keyword
     for index, keyword in enumerate(keywords):
@@ -84,10 +79,11 @@ def search_PII(root_node) -> None:
         print("Line not found.")
         
         
-def check_if_minified(directory_path):
+def search_minified_code(directory_path):
     is_minified = extract_is_minified_feature(directory_path)
     print(is_minified)
     
 if __name__ == '__main__':
-    # search_PII(root_node)
-    # check_if_minified(directory_path)
+    search_PII(root_node)
+    # directory_path = 'amalfi-artifact/data/packages/package/lib'
+    # search_minified_code(directory_path)
