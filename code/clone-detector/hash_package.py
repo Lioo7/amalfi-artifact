@@ -75,7 +75,6 @@ def is_hash_in_csv(root: str, csv_file: str) -> int:
         1 if the hash of the directory is in the CSV file, 0 otherwise.
     """
     hash = hash_package(root)
-    print('hash:', hash)
     with open(csv_file, 'r') as csvfile:
         reader = csv.reader(csvfile)
         for row in reader:

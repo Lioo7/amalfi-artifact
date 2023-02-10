@@ -21,7 +21,40 @@ CONTINUOUS_FEATURES = ["entropy average", "entropy standard deviation", "time"]
 
 def train_classifier(classifier, malicious_path, training_sets, output, booleanize=False, hashing=False, exclude_features=None,
                      nu=0.001, positive=False, render=False, randomize=False, view=False, leave_out=None, until=None, performance=None):
+    """
+    Train a classifier using the specified parameters.
 
+    classifier: str
+        The type of classifier to use. One of: "decision-tree", "naive-bayes", "support-vector-machine", or "random-forest".
+    malicious_path: str
+        The file path to a CSV file containing known malicious packages and versions or their hashes.
+    training_sets: list of str
+        A list of directories containing training sets.
+    output: str
+        The file path to save the trained classifier to.
+    booleanize: bool, optional
+        Whether to convert continuous values to binary values (True) or not (False). Default is False.
+    hashing: bool, optional
+        Whether to use hashes instead of package and version names. Default is False.
+    exclude_features: list of str, optional
+        A list of features to exclude from the classifier. Default is None.
+    nu: float, optional
+        The value of nu to use for SVM. Default is 0.001.
+    positive: bool, optional
+        Whether to use only positive feature values. Default is False.
+    render: bool, optional
+        Whether to render a visualization of the decision tree. Default is False.
+    randomize: bool, optional
+        Whether to randomize the labels of the training set. Default is False.
+    view: bool, optional
+        Whether to display the visualization of the decision tree. Default is False.
+    leave_out: list of str, optional
+        A list of directories to leave out of the training set. Default is None.
+    until: str, optional
+        Only include training examples from before this date. Default is None.
+    performance: str, optional
+        File path to save performance results. Default is None.
+    """
     if exclude_features == None:
         exclude_features = []
 
