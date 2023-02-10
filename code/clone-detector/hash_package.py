@@ -30,7 +30,7 @@ def hash_package(root):
 
 def add_hash_to_file(root_dir) -> None:
     """
-    This function calculates the hash of the packages and saves it to a CSV file named hash.csv.
+    This function calculates the hash of the packages and saves it to a CSV file named malicious_hash.csv.
 
     Args:
         root_dir: The full path to the directory that contains the packages
@@ -39,7 +39,7 @@ def add_hash_to_file(root_dir) -> None:
         None
     """
     full_path = "/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data"
-    file_name = "hash.csv"
+    file_name = "malicious_hash.csv"
     hash_path = full_path + "/" + file_name
 
     # Load the existing hashes into a list
@@ -62,7 +62,7 @@ def add_hash_to_file(root_dir) -> None:
 
 
 if __name__ == "__main__":
-    root_dir = "/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/training_data/benign" 
+    root_dir = "/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/training_data/malicious" 
     add_hash_to_file(root_dir)
     # if len(sys.argv) < 2:
     #     print(f"Usage: {sys.argv[0]} <package directory>", file=sys.stderr)

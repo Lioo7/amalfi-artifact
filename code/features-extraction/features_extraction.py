@@ -1,4 +1,5 @@
 
+from typing import Literal
 from search_in_file import parse_file, search_keyword_in_code
 from calculate_entropy import extract_is_minified_feature
 import logging
@@ -58,7 +59,7 @@ keywords = ['exec', 'spawn', 'fork', 'thread', 'process', 'child_process']
 
 (2)c
 Network access: sending or receiving data
-keywords = ['send', 'export', 'upload' ,'post', 'Ajax', 'XMLHttpRequest', 'submit']
+keywords = ['send', 'export', 'upload' ,'post', 'XMLHttpRequest', 'submit']
 #send -> we use send keyweord because when it comes to outward comminicaton, we expect to receive data,
 but it is very very unlikely that we will transfer data out from the device.
 thus we marked 'send' keyword
@@ -109,8 +110,9 @@ keywords = ['preinstall', 'postinstall', 'npm install']
 file_name = 'js_code_example'
 root_node = parse_file(file_name)
   
-def search_PII(root_node) -> None:
+def search_PII(root_node) -> Literal[1, 0]:
     """
+    (1) Access to personally-identifying information (PII): creditcard numbers, passwords, and cookies
     TODO:
     * current situation: have only two keywords
     * what to improve: have more keywords after the data exploration
@@ -125,17 +127,42 @@ def search_PII(root_node) -> None:
       if type(keyword) == list:
         sub_keywords[index] = [keyword, []]
 
+    is_using_PII = 0
     if search_keyword_in_code(root_node, keywords, sub_keywords):
-        print("Line found!")
-    else:
-        print("Line not found.")
-        
-        
-def search_minified_code(directory_path):
+        is_using_PII = 1
+    
+    return is_using_PII
+    
+def search_file_sys_access(root_node) -> Literal[1, 0]:
+    """
+    (2) Access to specific system resources:
+    (a) File-system access: reading and writing files
+    """
+    logging.info("start func: search_file_sys_access")
+    is_using_sys_acess = 0
+    
+    return is_using_sys_acess 
+    
+def search_file_process_creation(root_node) -> Literal[1, 0]:
+    """
+    (2) Access to specific system resources:
+    (b) Process creation: spawning new processes
+    """
+    logging.info("start func: search_file_process_creation")
+    is_using_process_creation = 0
+    
+    return is_using_process_creation             
+    
+def search_minified_code(directory_path) -> Literal[1, 0]:
+    """
+    Presence of minified code (to avoid detection) or binary files (such as binary executables)
+    """
+    logging.info("start func: search_minified_code")
     is_minified = extract_is_minified_feature(directory_path)
-    print(is_minified)
+    
+    return is_minified
     
 if __name__ == '__main__':
     #search_PII(root_node)
-    directory_path = 'amalfi-artifact/data/packages/package/lib'
+    directory_path = ''
     search_minified_code(directory_path)
