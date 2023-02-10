@@ -199,15 +199,14 @@ def search_minified_code(directory_path) -> Literal[1, 0]:
     return is_minified
 
 if __name__ == '__main__':
+    # print(f"search_PII: {search_PII(root_node)}")
+    # print(f"search_file_sys_access: {search_file_sys_access(root_node)}")
+    # print(f"search_file_process_creation: {search_file_process_creation(root_node)}")
+    # print(f"search_network_access: {search_network_access(root_node)}")
+    # print(f"search_Cryptographic_functionality: {search_Cryptographic_functionality(root_node)}")
+    # print(f"search_data_encoding: {search_data_encoding(root_node)}")
+    # print(f"search_dynamic_code_generation: {search_dynamic_code_generation(root_node)}")
+    # print(f"search_package_installation: {search_package_installation(root_node)}")
 
-    print(f"search_PII: {search_PII(root_node)}")
-    print(f"search_file_sys_access: {search_file_sys_access(root_node)}")
-    print(f"search_file_process_creation: {search_file_process_creation(root_node)}")
-    print(f"search_network_access: {search_network_access(root_node)}")
-    print(f"search_Cryptographic_functionality: {search_Cryptographic_functionality(root_node)}")
-    print(f"search_data_encoding: {search_data_encoding(root_node)}")
-    print(f"search_dynamic_code_generation: {search_dynamic_code_generation(root_node)}")
-    print(f"search_package_installation: {search_package_installation(root_node)}")
-    #search_PII(root_node)
-    #directory_path = ''
-    #search_minified_code(directory_path)
+    directory_path = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/packages/training_data/benign/@aws-amplify_core-v-4.7.13'
+    search_minified_code(directory_path)
