@@ -58,7 +58,7 @@ keywords = ['exec', 'spawn', 'fork', 'thread', 'process', 'child_process']
 
 (2)c
 Network access: sending or receiving data
-keywords = ['send']
+keywords = ['send', 'export', 'upload' ,'post', 'Ajax', 'XMLHttpRequest', 'submit']
 #send -> we use send keyweord because when it comes to outward comminicaton, we expect to receive data,
 but it is very very unlikely that we will transfer data out from the device.
 thus we marked 'send' keyword
