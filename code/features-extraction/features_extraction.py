@@ -29,29 +29,81 @@ Single-version features:
 
 """
 TODO: Add more keywords, some explnation and create a function for each feature
+
+
 '''#(2)a
 File-system access: reading and writing files
 keywords = ['read','write','file', 'require('fs')']
+#require('fs') is the File System Library that provides a simple
+ and convenient way to interact with the file system on the computer.
+ It provides functions for reading and writing files,
+ creating and deleting directories, and more.
 
 #(2)b
 Process creation: spawning new processes
 keywords = ['exec', 'spawn', 'fork', 'thread', 'process', 'child_process']
+#exec -> execute, used to run cmd commands on the device, including creation of new processes.
+
+#spawn -> The spawn keyword in JavaScript is used to start a new process in Node.js.
+ It creates a new process and runs a specified command in that process.
+
+#fork -> The fork method in the child_process module in Node.js is used to create a new
+ Node.js process that is a child of the current process. Unlike the spawn method,
+ which creates a new process and runs a separate command, the fork method creates
+ a new process that runs the same code as the parent process.
+
+#child_process -> The child_process module in Node.js is a module for creating and controlling
+ child processes in a Node.js application. It provides a way to start new processes,
+ run shell commands, and manage the communication between a Node.js process and its child processes.
 
 (2)c
-Process creation: spawning new processes
+Network access: sending or receiving data
 keywords = ['send']
+#send -> we use send keyweord because when it comes to outward comminicaton, we expect to receive data,
+but it is very very unlikely that we will transfer data out from the device.
+thus we marked 'send' keyword
 
 (3)(a) Cryptographic functionality
-keywords = ['crypto']
+keywords = ['crypto', 'mining']
+mining: The process of finding a hash that meets certain criteria in a cryptocurrency network.
 
 (3)(b) Data encoding using encodeURIComponent etc.
 keywords = ['encodeURIComponent', 'querystring', 'qs', 'base64', 'btoa', 'atob', 'Buffer', 'JSON.stringify']
 
+#base64 -> common encoding method.
+
+#encodeURIComponent -> common encoding function with utf-8.
+
+#querystring -> This is a built-in Node.js library for working
+ with query strings. It provides methods for encoding and decoding query strings.
+
+#qs: This is a popular library for encoding and decoding query strings in both
+ the browser and Node.js. It provides a more powerful set of features compared
+  to the built-in querystring library.
+
+#btoa and atob: These are global functions in JavaScript for
+ base64 encoding and decoding respectively.
+
+#Buffer: This is a built-in class in Node.js for working with binary data.
+ You can use the .toString('base64') method to encode binary data as a base64 string.
+
+#JSON.stringify: This is a built-in method in JavaScript for converting a JavaScript
+ object to a JSON string. JSON is a widely used format for encoding data structures and exchanging data between client and server.
+
+
+
 (3)(c) Dynamic code generation using eval, Function, etc.
 keywords = ['eval', 'Function']
+#eval -> a function that is used to dynamically execute the code defined in the string code.
+# Function -> Function constructor: This allows you to dynamically create a new function
+ and execute it. The Function constructor takes a string of code as its
+  argument and returns a reference to a new function that can be executed.
 
 (4) Use of package installation scripts
 keywords = ['preinstall', 'postinstall', 'npm install']
+#In npm, pre-install and post-install are scripts that can
+ be defined in the scripts section of the package.json file.
+ These scripts are executed before and after the installation of packages, respectively.
 """
 
 file_name = 'js_code_example'
@@ -84,6 +136,6 @@ def search_minified_code(directory_path):
     print(is_minified)
     
 if __name__ == '__main__':
-    search_PII(root_node)
-    # directory_path = 'amalfi-artifact/data/packages/package/lib'
-    # search_minified_code(directory_path)
+    #search_PII(root_node)
+    directory_path = 'amalfi-artifact/data/packages/package/lib'
+    search_minified_code(directory_path)
