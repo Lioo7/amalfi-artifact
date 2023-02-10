@@ -263,3 +263,5 @@ if __name__ == "__main__":
     until = parse_date(args.until)
     train_classifier(args.classifier, args.malicious, args.training_sets, args.output, booleanize, hashing, args.exclude_features,
                      args.nu, positive, args.render, randomize, args.view, args.leave_out, until)
+
+#  --hashing true -o test.txt
