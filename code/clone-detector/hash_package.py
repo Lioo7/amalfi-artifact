@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import sys
+import csv
 
 
 def hash_package(root):
@@ -23,8 +24,11 @@ def hash_package(root):
                 pkg["version"] = ""
                 m.update(json.dumps(pkg, sort_keys=True).encode("utf-8"))
             else:
-                with open(path, "rb") as f:
-                    m.update(f.read())
+                try:
+                    with open(path, "rb") as f:
+                        m.update(f.read())
+                except:
+                    print(f'ERROR: path {path}')
     return m.hexdigest()
 
 
@@ -59,13 +63,29 @@ def add_hash_to_file(root_dir) -> None:
                     file.write(f"{hash}\n")
                     hashes.append(hash)
   
+def is_hash_in_csv(root: str, csv_file: str) -> int:
+    """
+    This function calculates the hash of a package and returns 1 if the hash is in the given CSV file, and 0 otherwise.
 
+    Args:
+        root: The root directory of the package to calculate the hash
+        csv_file: The path to the CSV file.
+
+    Returns:
+        1 if the hash of the directory is in the CSV file, 0 otherwise.
+    """
+    hash = hash_package(root)
+    print('hash:', hash)
+    with open(csv_file, 'r') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            if row[0] == hash:
+                return 1
+    return 0
 
 if __name__ == "__main__":
-    root_dir = "/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/training_data/malicious" 
-    add_hash_to_file(root_dir)
-    # if len(sys.argv) < 2:
-    #     print(f"Usage: {sys.argv[0]} <package directory>", file=sys.stderr)
-    #     print(f"  Prints an md5 hash of all files in the given package directory, ignoring package name and version.", file=sys.stderr)
-    #     sys.exit(1)
-    # print(hash_package(sys.argv[1]))
+    if len(sys.argv) < 2:
+        print(f"Usage: {sys.argv[0]} <package directory>", file=sys.stderr)
+        print(f"  Prints an md5 hash of all files in the given package directory, ignoring package name and version.", file=sys.stderr)
+        sys.exit(1)
+    print(hash_package(sys.argv[1]))
