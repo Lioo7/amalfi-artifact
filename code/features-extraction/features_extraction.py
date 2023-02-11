@@ -163,9 +163,6 @@ def search_minified_code(directory_path) -> Literal[1, 0]:
     
     return is_minified
             
-import os
-import logging
-
 def extract_features(root_dir: str, malicious) -> None:
     """
     This function is used to traverse a given directory and extract features of each javascript file in it.
@@ -239,8 +236,6 @@ def extract_features(root_dir: str, malicious) -> None:
             old_inner_lst = package_features[package_name]
             
             # perform the bitwise operation between the new and old feature lists
-            logging.debug(f"new_inner_lst: {new_inner_lst[2:-1]}")
-            logging.debug(f"old_inner_lst: {old_inner_lst[2:-1]}")
             updated_inner_lst = bitwise_operation(new_inner_lst[2:-1], old_inner_lst[2:-1], '|')
             
             # update the value in the package_features dictionary with the updated feature list
