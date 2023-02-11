@@ -35,7 +35,7 @@ parser.set_language(JS_LANGUAGE)
 def parse_file(file_name):
     logging.info(f"start func: parse_file")
     # Open the file using the open() function, specifying the mode as 'r' for reading.
-    file = open(file_name + '.js', 'r')
+    file = open(file_name, 'r')
     # Read the contents of the file using the read() method
     code = file.read()
     # Parse the file and get the syntax tree
