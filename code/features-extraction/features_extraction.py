@@ -2,6 +2,7 @@
 from typing import Literal
 from calculate_entropy import extract_is_minified_feature
 from util import bitwise_operation, general_search, parse_file, extract_package_details, write_dict_to_csv
+from packages_without_content import extract_is_has_no_content
 import logging
 import os
 
@@ -181,7 +182,7 @@ def extract_features(root_dir: str, malicious) -> None:
     
     package_features = {} # {package_name:[f1, f2, ..., fn]}
     visited_packages = set() # the set will contain the packages name that were traversed 
-    NUM_OF_FEATURES_INCLUDE = 12 # number of features include name, version and label
+    NUM_OF_FEATURES_INCLUDE = 13 # number of features include name, version and label
     
     for dirname, subdirs, files in os.walk(root_dir):
         
@@ -190,7 +191,7 @@ def extract_features(root_dir: str, malicious) -> None:
         package_index = path_lst.index(packages_type) + 1
         
         for filename in files:
-            if not filename.endswith(".js"):
+            if not filename.endswith(".js") and not filename.endswith(".json"):
                 continue
             file_path = os.path.join(dirname, filename)
             package_name = path_lst[package_index]
@@ -216,21 +217,23 @@ def extract_features(root_dir: str, malicious) -> None:
             is_dynamic_code_generation = search_dynamic_code_generation(parse_file(file_path)) # 8
             is_package_installation = search_package_installation(parse_file(file_path)) # 9
             # check if the package was already processed
-            if package_name not in visited_packages:  # 10
+            if package_name not in visited_packages:  
                 logging.debug(f"{package_name} was not visit yet")
                 index = dirname.find("/package")
                 logging.debug(f"dirname[:index]: {dirname[:index]}")
-                is_minified_code = search_minified_code(dirname[:index])
+                is_minified_code = search_minified_code(dirname[:index]) # 10
+                is_has_no_content = extract_is_has_no_content(dirname[:index]) # 11
+                
                 visited_packages.add(package_name)
             else:
                 is_minified_code = package_features[package_name][10]
-            label = packages_type # 11
+            label = packages_type # 12
                 
             # create a new list of the current package's features
             new_inner_lst = [name, version, is_PII, is_file_sys_access, is_process_creation, 
                              is_network_access, is_crypto_functionality, is_data_encoding, 
                              is_dynamic_code_generation, is_package_installation, is_minified_code, 
-                             label]
+                             is_has_no_content, label]
             
             # get the old feature list for the current package name
             old_inner_lst = package_features[package_name]

@@ -155,7 +155,7 @@ def write_dict_to_csv(dict_data, csv_file, method='w') -> None:
 
     headers = ['package','version','PII','file_sys_access','file_process_creation',
         'network_access','cryptographic_functionality', 'data_encoding',
-        'dynamic_code_generation','package_installation', 'is_minified_code','label']
+        'dynamic_code_generation','package_installation', 'is_minified_code', 'is_has_no_content','label']
 
     with open(csv_file, method, newline='') as f:
         writer = csv.writer(f)

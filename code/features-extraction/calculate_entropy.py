@@ -73,8 +73,8 @@ def extract_is_minified_feature(directory_path) -> Literal[1, 0]:
         std_dev_entropy = math.sqrt(sum((x - avg_entropy)**2 for x in entropy_values) / len(entropy_values))
 
         # Create a feature indicating whether the data is minified or not
-        AVG_ENTROPY_THRESHOLD = 4.6
-        STD_DEV_ENTROPY_THRESHOLD = 0.5
+        AVG_ENTROPY_THRESHOLD = 4.5
+        STD_DEV_ENTROPY_THRESHOLD = 0.4
         if avg_entropy > AVG_ENTROPY_THRESHOLD and std_dev_entropy > STD_DEV_ENTROPY_THRESHOLD:
             is_minified = 1          
         logging.info(f'avg_entropy: {avg_entropy}')
