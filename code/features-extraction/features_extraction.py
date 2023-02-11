@@ -3,6 +3,7 @@ from typing import Literal
 from search_in_file import parse_file, search_keyword_in_code
 from calculate_entropy import extract_is_minified_feature
 import logging
+import os
 
 import csv
 import os
@@ -200,6 +201,22 @@ def search_minified_code(directory_path) -> Literal[1, 0]:
     is_minified = extract_is_minified_feature(directory_path)
     
     return is_minified
+            
+def traverse_directory(root_dir: str) -> None:
+    for dirname, subdirs, files in os.walk(root_dir):
+        path_lst = dirname.split(os.path.sep)
+        package_index = path_lst.index('benign') + 1
+        for filename in files:
+            if not filename.endswith(".js"):
+                continue
+            file_path = os.path.join(dirname, filename)
+            package_name = path_lst[package_index]
+
+            logging.debug('================================================')
+            logging.debug(f"File path: {file_path}")
+            logging.debug(f"Package name: {package_name}")
+            logging.debug(f"filename: {filename}")
+            
 
 
 def gather_data(root_dir,trigger):
@@ -251,14 +268,5 @@ if __name__ == '__main__':
         for row in end_result:
             writer.writerow(row)
 
-    '''print(f"search_PII: {search_PII(root_node)}")
-    print(f"search_file_sys_access: {search_file_sys_access(root_node)}")
-    print(f"search_file_process_creation: {search_file_process_creation(root_node)}")
-    print(f"search_network_access: {search_network_access(root_node)}")
-    print(f"search_Cryptographic_functionality: {search_Cryptographic_functionality(root_node)}")
-    print(f"search_data_encoding: {search_data_encoding(root_node)}")
-    print(f"search_dynamic_code_generation: {search_dynamic_code_generation(root_node)}")
-    print(f"search_package_installation: {search_package_installation(root_node)}")
-    #search_PII(root_node)'''
-    #directory_path = ''
-    #search_minified_code(directory_path)
+    benign_path = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/packages/training_data/benign'
+    traverse_directory(benign_path)
