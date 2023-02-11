@@ -43,7 +43,7 @@ def parse_file(file_name):
     root_node = tree.root_node
     return root_node
 
-def search_keyword_in_code(root_node, keywords, sub_keywords)->bool:
+def search_keyword_in_code_draft(root_node, keywords, sub_keywords)->bool:
   """
   TODO:
   * current situation: the function stoping after the function find the first match
@@ -73,9 +73,33 @@ def search_keyword_in_code(root_node, keywords, sub_keywords)->bool:
     # recursion 
     if found == False:
         logging.debug("calling recursion")
-        found = search_keyword_in_code(child, keywords, sub_keywords)
+        found = search_keyword_in_code_draft(child, keywords, sub_keywords)
         if found:
             break
   
   logging.debug(f"results of search_keyword_in_code: {found}")
   return found
+
+
+def search_keyword_in_code(root_node, keywords):
+  """
+  TODO:
+  * current situation: the function stoping after the function find the first match
+  * what to improve: have to add the function the ability to count the number of occurrences of all keywords
+  """
+  logging.info(f"start func: search_keyword_in_code")
+  
+  for child in root_node.children:
+    # search if the child in one of the keywords
+    logging.debug(f"child: {child.text.decode()}")
+    for tpl in keywords:
+      if child.text.decode() == tpl[0]:
+          #found = True
+          tpl[2] = 1
+          logging.info(f"keyword found!\nThe keyword that found is: {child.text.decode()}")
+          #break
+
+    logging.debug("calling recursion")
+    search_keyword_in_code(child, keywords)
+
+  return keywords

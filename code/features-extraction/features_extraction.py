@@ -1,6 +1,6 @@
 
 from typing import Literal
-from search_in_file import parse_file, search_keyword_in_code
+from search_in_file import parse_file, search_keyword_in_code, search_keyword_in_code_draft
 from calculate_entropy import extract_is_minified_feature
 import logging
 import os
@@ -16,8 +16,8 @@ logging.basicConfig(
 logger = logging.getLogger()
 
 
-#file_name = 'js_code_example'
-#root_node = parse_file(file_name)
+file_name = 'js_code_example.js'
+root_node = parse_file(file_name)
 
 def search_PII(root_node) -> Literal[1, 0]:
     """
@@ -185,31 +185,46 @@ def general_search(root_node,keywords) -> Literal[1, 0]:
         sub_keywords[index] = [keyword, []]
 
     is_using = 0
-    if search_keyword_in_code(root_node, keywords, sub_keywords):
+    if search_keyword_in_code_draft(root_node, keywords, sub_keywords):
         is_using = 1
     
     
     return is_using
 
 
-def total_search(root_node,keywords) -> Literal[1, 0]:
-    
-    
-    logging.info("start func: general_search")
+def total_search(root_node):
+    #(value, group ID, found or not, sub group ID: -1 is stand alone, other values are sub group ID)
+    full_data = [['screenshot',1,0,-1],['keypress',1,0,1],['POST',1,0,1],
+    ['creditcard',1,0,-1],['cookies',1,0,-1],['passwords',1,0,-1],['appData',1,0,-1],['read',2,0,-1],
+    ['write',2,0,-1],['file',2,0,-1],['require["fs"]',2,0,-1],['exec',3,0,-1],['spawn',3,0,-1],
+    ['fork',3,0,-1],['thread',3,0,-1],['process',3,0,-1],['child_process',3,0,-1],['send',4,0,-1],
+    ['export',4,0,-1],['upload',4,0,-1],['post',4,0,-1],['XMLHttpRequest',4,0,-1],['submit',4,0,-1],
+    ['crypto',5,0,-1],['mining',5,0,-1],['encodeURIComponent',6,0,-1],['querystring',6,0,-1],
+    ['qs',6,0,-1],['base64',6,0,-1],['btoa',6,0,-1],['atob',6,0,-1],['Buffer',6,0,-1],
+    ['JSON.stringify',6,0,-1],['eval',7,0,-1],['Function',7,0,-1],
+    ['preinstall',8,0,-1],['postinstall',8,0,-1],['npm install',8,0,-1]]
 
-     # Traverse the syntax tree and check for the specific line of code
-    sub_keywords = {} # {index of the sublist in keywords: keyword, [words that found]}
-    # for each sublist in keywords, add the index and the keyword
-    for index, keyword in enumerate(keywords):
-      if type(keyword) == list:
-        sub_keywords[index] = [keyword, []]
-
-    is_using = 0
-    if search_keyword_in_code(root_node, keywords, sub_keywords):
-        is_using = 1
-    
-    
-    return is_using 
+    logging.info("start func: total_seatch")
+    search_keyword_in_code(root_node, full_data)
+    result = {}
+    for item in full_data:
+        key = item[-1]
+        if key not in result:
+            result[key] = []
+        result[key].append(item)
+    full_data = list(result.values())
+    is_using = [0,0,0,0,0,0,0,0]
+    for item in full_data:
+        if item[0][3] == -1:
+            for inner_item in item:
+                if inner_item[2] == 1:
+                    is_using[inner_item[1] - 1] = 1
+        else:
+            for inner_item in item:
+                if inner_item[2] == 0:
+                    break
+                is_using[inner_item[1] - 1] = 1
+    return is_using
   
     
 def search_minified_code(directory_path) -> Literal[1, 0]:
@@ -221,22 +236,6 @@ def search_minified_code(directory_path) -> Literal[1, 0]:
     is_minified = extract_is_minified_feature(directory_path)
     
     return is_minified
-            
-def traverse_directory(root_dir: str) -> None:
-    for dirname, subdirs, files in os.walk(root_dir):
-        path_lst = dirname.split(os.path.sep)
-        package_index = path_lst.index('benign') + 1
-        for filename in files:
-            if not filename.endswith(".js"):
-                continue
-            file_path = os.path.join(dirname, filename)
-            package_name = path_lst[package_index]
-
-            logging.debug('================================================')
-            logging.debug(f"File path: {file_path}")
-            logging.debug(f"Package name: {package_name}")
-            logging.debug(f"filename: {filename}")
-            
 
 
 def gather_data(root_dir,trigger):
@@ -269,23 +268,10 @@ def gather_data(root_dir,trigger):
                     if fi.endswith(".js"):
                         path_to_go = dirpath +"\\" + fi
                         try:
-                            local_list.append(search_PII(parse_file(path_to_go)))
+                            local_list = local_list + total_search(parse_file(path_to_go))
                         except:
-                            local_list.append(0)
-                        local_list.append(0)
-                        local_list.append(0)
-                        local_list.append(0)
-                        local_list.append(0)
-                        local_list.append(0)
-                        local_list.append(0)
-                        local_list.append(0)
-                        '''local_list.append(search_file_sys_access(parse_file(path_to_go)))
-                        local_list.append(search_file_process_creation(parse_file(path_to_go)))
-                        local_list.append(search_network_access(parse_file(path_to_go)))
-                        local_list.append(search_Cryptographic_functionality(parse_file(path_to_go)))
-                        local_list.append(search_data_encoding(parse_file(path_to_go)))
-                        local_list.append(search_dynamic_code_generation(parse_file(path_to_go)))
-                        local_list.append(search_package_installation(parse_file(path_to_go)))'''
+                            local_list = local_list + [0,0,0,0,0,0,0,0]
+
                     for i in range(0, len(local_list)):
                         if current_list[i+2] == 0:
                             current_list[i+2] = local_list[i]
@@ -295,6 +281,9 @@ def gather_data(root_dir,trigger):
 
 if __name__ == '__main__':
 
+    # output = total_search(root_node)
+    # print(output)
+    # exit()
     root_dir_benign =  "C:\\Users\\Amit\\AMIT\\cyberdetectiontaskfinal\\amalfi-artifact\data\\training_data\\benign"
     root_dir_malicious =  "C:\\Users\\Amit\\AMIT\\cyberdetectiontaskfinal\\amalfi-artifact\data\\training_data\\malicious"
     end_result = gather_data(root_dir_benign,True) + gather_data(root_dir_malicious,False)
