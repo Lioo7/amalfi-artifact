@@ -100,6 +100,7 @@ def bitwise_operation(list1, list2, operation) -> list:
     operation_dict = {'&': '&', '|': '|', '^': '^'}
     operation = operation_dict[operation]
     result = [eval(f"{a} {operation} {b}") for a, b in zip(list1, list2)]
+    
     return result
 
 def general_search(root_node,keywords) -> Literal[1, 0]:
@@ -136,8 +137,6 @@ def extract_package_details(package_name: str) -> tuple:
 
     name, version = package_name.split('-v-')
     return (name, version)
-
-import csv
 
 def write_dict_to_csv(dict_data, csv_file, method='w') -> None:
     """

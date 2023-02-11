@@ -2,7 +2,7 @@ import os
 import csv
 from datetime import datetime
 
-def parse_date(timestamp):
+def parse_date(timestamp) -> datetime:
     """
     Convert a timestamp string to a datetime object.
 
