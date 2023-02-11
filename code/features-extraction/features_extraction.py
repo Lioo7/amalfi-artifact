@@ -1,11 +1,8 @@
 
 from typing import Literal
-from search_in_file import parse_file, search_keyword_in_code
 from calculate_entropy import extract_is_minified_feature
+from util import bitwise_operation, general_search, parse_file, extract_package_details, write_dict_to_csv
 import logging
-import os
-
-import csv
 import os
 
 LOGֹ_FORMAT = "%(levelname)s, time: %(asctime)s , line: %(lineno)d- %(message)s "
@@ -14,10 +11,6 @@ logging.basicConfig(
     filename="features-extraction-logging.log", level=logging.INFO, filemode="w"
 )
 logger = logging.getLogger()
-
-
-file_name = 'js_code_example'
-root_node = parse_file(file_name)
 
 def search_PII(root_node) -> Literal[1, 0]:
     """
@@ -60,17 +53,13 @@ def search_file_process_creation(root_node) -> Literal[1, 0]:
     '''
         #(2)b
     Process creation: spawning new processes
-
     #exec -> execute, used to run cmd commands on the device, including creation of new processes.
-
     #spawn -> The spawn keyword in JavaScript is used to start a new process in Node.js.
     It creates a new process and runs a specified command in that process.
-
     #fork -> The fork method in the child_process module in Node.js is used to create a new
     Node.js process that is a child of the current process. Unlike the spawn method,
     which creates a new process and runs a separate command, the fork method creates
     a new process that runs the same code as the parent process.
-
     #child_process -> The child_process module in Node.js is a module for creating and controlling
     child processes in a Node.js application. It provides a way to start new processes,
     run shell commands, and manage the communication between a Node.js process and its child processes.'''
@@ -95,7 +84,7 @@ def search_network_access(root_node) -> Literal[1, 0]:
     keywords = ['send', 'export', 'upload' ,'post', 'XMLHttpRequest', 'submit']
     return general_search(root_node, keywords)     
 
-def search_Cryptographic_functionality(root_node) -> Literal[1, 0]:
+def search_cryptographic_functionality(root_node) -> Literal[1, 0]:
     """
     (3) Use of specific APIs 
     (a) Access to crypto functionality:
@@ -116,25 +105,17 @@ def search_data_encoding(root_node) -> Literal[1, 0]:
     logging.info("start func: search_encoded_data")
 
     '''(3)(b) Data encoding using encodeURIComponent etc.
-    #base64 -> common encoding method.
-
-    #encodeURIComponent -> common encoding function with utf-8.
-
-    #querystring -> This is a built-in Node.js library for working
-    with query strings. It provides methods for encoding and decoding query strings.
-
-    #qs: This is a popular library for encoding and decoding query strings in both
-    the browser and Node.js. It provides a more powerful set of features compared
-    to the built-in querystring library.
-
-    #btoa and atob: These are global functions in JavaScript for
-    base64 encoding and decoding respectively.
-
-    #Buffer: This is a built-in class in Node.js for working with binary data.
+    base64 -> common encoding method.
+    encodeURIComponent -> common encoding function with utf-8.
+    querystring -> This is a built-in Node.js library for working with query strings. 
+    It provides methods for encoding and decoding query strings.
+    qs: This is a popular library for encoding and decoding query strings in both the browser and Node.js. 
+    It provides a more powerful set of features compared to the built-in querystring library.
+    btoa and atob: These are global functions in JavaScript for base64 encoding and decoding respectively.
+    Buffer: This is a built-in class in Node.js for working with binary data.
     You can use the .toString('base64') method to encode binary data as a base64 string.
-
-    #JSON.stringify: This is a built-in method in JavaScript for converting a JavaScript
-    object to a JSON string. JSON is a widely used format for encoding data structures and exchanging data between client and server.'''
+    JSON.stringify: This is a built-in method in JavaScript for converting a JavaScript object to a JSON string. 
+    JSON is a widely used format for encoding data structures and exchanging data between client and server.'''
 
     keywords = ['encodeURIComponent', 'querystring', 'qs', 'base64', 'btoa', 'atob', 'Buffer', 'JSON.stringify']
     
@@ -171,26 +152,6 @@ def search_package_installation(root_node) -> Literal[1, 0]:
     keywords = ['preinstall', 'postinstall', 'npm install']
 
     return general_search(root_node, keywords)
-
-def general_search(root_node,keywords) -> Literal[1, 0]:
-    
-    
-    logging.info("start func: general_search")
-
-     # Traverse the syntax tree and check for the specific line of code
-    sub_keywords = {} # {index of the sublist in keywords: keyword, [words that found]}
-    # for each sublist in keywords, add the index and the keyword
-    for index, keyword in enumerate(keywords):
-      if type(keyword) == list:
-        sub_keywords[index] = [keyword, []]
-
-    is_using = 0
-    if search_keyword_in_code(root_node, keywords, sub_keywords):
-        is_using = 1
-    
-    
-    return is_using 
-  
     
 def search_minified_code(directory_path) -> Literal[1, 0]:
     """
@@ -202,10 +163,35 @@ def search_minified_code(directory_path) -> Literal[1, 0]:
     
     return is_minified
             
-def traverse_directory(root_dir: str) -> None:
+import os
+import logging
+
+def extract_features(root_dir: str, malicious) -> None:
+    """
+    This function is used to traverse a given directory and extract features of each javascript file in it.
+    The extracted features are saved in a dictionary named `package_features` in the format of `{package_name: [feature_1, feature_2, ..., feature_n]}`.
+
+    Args:
+    - root_dir (str): The path of the root directory to traverse.
+    - malicious (bool): Indicates whether the files in the directory are malicious or benign.
+
+    Returns:
+    None. The function saves the extracted features in a csv file.
+
+    """
+    logging.info("start func: extract_features")
+    logging.info(f'malicious?: {malicious}')
+    
+    package_features = {} # {package_name:[f1, f2, ..., fn]}
+    visited_packages = set() # the set will contain the packages name that were traversed 
+    NUM_OF_FEATURES_INCLUDE = 12 # number of features include name, version and label
+    
     for dirname, subdirs, files in os.walk(root_dir):
+        
         path_lst = dirname.split(os.path.sep)
-        package_index = path_lst.index('benign') + 1
+        packages_type = "malicious" if malicious else "benign"
+        package_index = path_lst.index(packages_type) + 1
+        
         for filename in files:
             if not filename.endswith(".js"):
                 continue
@@ -217,56 +203,60 @@ def traverse_directory(root_dir: str) -> None:
             logging.debug(f"Package name: {package_name}")
             logging.debug(f"filename: {filename}")
             
+            # check if the current package name already exists in the package_features dictionary
+            if package_name not in package_features:
+                # if not, initialize a list of NUM_OF_FEATURES_INCLUDE elements with value 0
+                init_lst = [0] * NUM_OF_FEATURES_INCLUDE
+                package_features[package_name] = init_lst
+            
+            name, version = extract_package_details(package_name) # 0, 1
+            is_PII = search_PII(parse_file(file_path)) # 2
+            is_file_sys_access = search_file_sys_access(parse_file(file_path)) # 3
+            is_process_creation = search_file_process_creation(parse_file(file_path)) # 4
+            is_network_access = search_network_access(parse_file(file_path)) # 5
+            is_crypto_functionality = search_cryptographic_functionality(parse_file(file_path)) # 6
+            is_data_encoding = search_data_encoding(parse_file(file_path)) # 7
+            is_dynamic_code_generation = search_dynamic_code_generation(parse_file(file_path)) # 8
+            is_package_installation = search_package_installation(parse_file(file_path)) # 9
+            # check if the package was already processed
+            if package_name not in visited_packages:  # 10
+                logging.debug(f"{package_name} was not visit yet")
+                index = dirname.find("/package")
+                logging.debug(f"dirname[:index]: {dirname[:index]}")
+                is_minified_code = search_minified_code(dirname[:index])
+                visited_packages.add(package_name)
+            else:
+                is_minified_code = package_features[package_name][10]
+            label = packages_type # 11
+                
+            # create a new list of the current package's features
+            new_inner_lst = [name, version, is_PII, is_file_sys_access, is_process_creation, 
+                             is_network_access, is_crypto_functionality, is_data_encoding, 
+                             is_dynamic_code_generation, is_package_installation, is_minified_code, 
+                             label]
+            
+            # get the old feature list for the current package name
+            old_inner_lst = package_features[package_name]
+            
+            # perform the bitwise operation between the new and old feature lists
+            logging.debug(f"new_inner_lst: {new_inner_lst[2:-1]}")
+            logging.debug(f"old_inner_lst: {old_inner_lst[2:-1]}")
+            updated_inner_lst = bitwise_operation(new_inner_lst[2:-1], old_inner_lst[2:-1], '|')
+            
+            # update the value in the package_features dictionary with the updated feature list
+            package_features[package_name] = [name] + [version] + updated_inner_lst + [label]
+    
+    # define the path for the output CSV file
+    csv_file = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/dataset/change-features.csv'
+    
+    # decide whether to write the data in append mode or write mode based on the input malicious flag
+    method = 'a' if malicious else "w"
+    
+    # call the write_dict_to_csv function to write the package_features dictionary to the CSV file
+    write_dict_to_csv(dict_data=package_features, csv_file=csv_file, method=method)
 
-
-def gather_data(root_dir,trigger):
-    all_list = []
-    if trigger:
-        all_list.append(['package','version','PII','file_sys_access','file_process_creation',
-        'network_access','Cryptographic_functionality', 'data_encoding',
-        'dynamic_code_generation','package_installation','label'])
-    for folder in os.listdir(root_dir):
-
-        folder_path = os.path.join(root_dir, folder)
-        print(f"{folder}, {folder_path}\n")
-
-        if os.path.isfolder(folder_path):
-            print("yes")
-            file_name = os.path.basename(folder_path)
-            current_file_values = file_name.split('-v-')
-            current_list = []
-            current_list.append(current_file_values[0])
-            current_list.append(current_file_values[1])
-            for dirpath, dirnames, filenames in os.walk(folder_path):
-                None
-            current_list.append(search_PII(parse_file(folder_path)))
-            current_list.append(search_file_sys_access(parse_file(folder_path)))
-            current_list.append(search_file_process_creation(parse_file(folder_path)))
-            current_list.append(search_network_access(parse_file(folder_path)))
-            current_list.append(search_Cryptographic_functionality(parse_file(folder_path)))
-            current_list.append(search_data_encoding(parse_file(folder_path)))
-            current_list.append(search_dynamic_code_generation(parse_file(folder_path)))
-            current_list.append(search_package_installation(parse_file(folder_path)))
-            current_list.append(search_package_installation(parse_file(folder_path)))
-            label = "benign" if trigger else "malicious"
-            current_list.append(label)
-            all_list.append(current_list)
-    return all_list
 
 if __name__ == '__main__':
-
-    root_dir_benign =  "C:\\Users\\Amit\\AMIT\\cyberdetectiontaskfinal\\amalfi-artifact\data\\training_data\\benign"
-    root_dir_malicious =  "C:\\Users\\Amit\\AMIT\\cyberdetectiontaskfinal\\amalfi-artifact\data\\training_data\\malicious"
-    end_result = gather_data(root_dir_benign,True) + gather_data(root_dir_malicious,False)
-    exit()
-    full_path = "C:\\Users\\Amit\\AMIT\\cyberdetectiontaskfinal\\amalfi-artifact\\data\\dataset\\change-features.csv"
-    with open(full_path, "w", newline="") as f:
-        # Create a CSV writer object
-        writer = csv.writer(f)
-
-        # Write the data to the file
-        for row in end_result:
-            writer.writerow(row)
-
-    benign_path = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/packages/training_data/benign'
-    traverse_directory(benign_path)
+    benign_path = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/extracted-packages/training_data/benign'
+    malicious_path = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/extracted-packages/training_data/malicious'
+    extract_features(malicious_path, malicious=True)

@@ -1,3 +1,4 @@
+from distutils.log import error
 import os
 import math
 from typing import Literal
@@ -37,9 +38,9 @@ def extract_is_minified_feature(directory_path) -> Literal[1, 0]:
 
     Returns:
         is_minified (int): 1 if the code is minified, 0 otherwise.
-    """
-    
-    logging.info("start func: extract_is_minified_feature")
+    """ 
+    logging.debug("start func: extract_is_minified_feature")
+    logging.debug(f'directory_path: {directory_path}')
     
     # Store the entropy values of each file in the directory
     entropy_values = []
@@ -57,10 +58,12 @@ def extract_is_minified_feature(directory_path) -> Literal[1, 0]:
             # Read the contents of the file as binary data
             with open(file_path, "rb") as f:
                 data = f.read()
-            # Calculate the entropy of the binary data
-            entropy = calculate_entropy(data)
-            # Append the entropy to the list of entropy values
-            entropy_values.append(entropy)
+            if len(data) > 0:
+                # Calculate the entropy of the binary data
+                entropy = calculate_entropy(data)
+                logging.debug(f"entropy: {entropy}")
+                # Append the entropy to the list of entropy values
+                entropy_values.append(entropy)
 
     is_minified = 0
 
@@ -74,10 +77,10 @@ def extract_is_minified_feature(directory_path) -> Literal[1, 0]:
         STD_DEV_ENTROPY_THRESHOLD = 0.5
         if avg_entropy > AVG_ENTROPY_THRESHOLD and std_dev_entropy > STD_DEV_ENTROPY_THRESHOLD:
             is_minified = 1          
-    
-    logging.info(f'avg_entropy: {avg_entropy}')
-    logging.info(f'std_dev_entropy: {std_dev_entropy}')
-    logging.info(f'is_minified: {is_minified}')
+        logging.info(f'avg_entropy: {avg_entropy}')
+        logging.info(f'std_dev_entropy: {std_dev_entropy}')
+        logging.info(f'is_minified: {is_minified}')
+        
     return is_minified
 
 
