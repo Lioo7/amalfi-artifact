@@ -16,8 +16,8 @@ logging.basicConfig(
 logger = logging.getLogger()
 
 
-file_name = 'js_code_example'
-root_node = parse_file(file_name)
+#file_name = 'js_code_example'
+#root_node = parse_file(file_name)
 
 def search_PII(root_node) -> Literal[1, 0]:
     """
@@ -189,6 +189,26 @@ def general_search(root_node,keywords) -> Literal[1, 0]:
         is_using = 1
     
     
+    return is_using
+
+
+def total_search(root_node,keywords) -> Literal[1, 0]:
+    
+    
+    logging.info("start func: general_search")
+
+     # Traverse the syntax tree and check for the specific line of code
+    sub_keywords = {} # {index of the sublist in keywords: keyword, [words that found]}
+    # for each sublist in keywords, add the index and the keyword
+    for index, keyword in enumerate(keywords):
+      if type(keyword) == list:
+        sub_keywords[index] = [keyword, []]
+
+    is_using = 0
+    if search_keyword_in_code(root_node, keywords, sub_keywords):
+        is_using = 1
+    
+    
     return is_using 
   
     
@@ -228,28 +248,48 @@ def gather_data(root_dir,trigger):
     for folder in os.listdir(root_dir):
 
         folder_path = os.path.join(root_dir, folder)
-        print(f"{folder}, {folder_path}\n")
+        #print(f"{folder}, {folder_path}\n")
 
-        if os.path.isfolder(folder_path):
-            print("yes")
+        if os.path.isdir(folder_path):
             file_name = os.path.basename(folder_path)
             current_file_values = file_name.split('-v-')
             current_list = []
             current_list.append(current_file_values[0])
             current_list.append(current_file_values[1])
-            for dirpath, dirnames, filenames in os.walk(folder_path):
-                None
-            current_list.append(search_PII(parse_file(folder_path)))
-            current_list.append(search_file_sys_access(parse_file(folder_path)))
-            current_list.append(search_file_process_creation(parse_file(folder_path)))
-            current_list.append(search_network_access(parse_file(folder_path)))
-            current_list.append(search_Cryptographic_functionality(parse_file(folder_path)))
-            current_list.append(search_data_encoding(parse_file(folder_path)))
-            current_list.append(search_dynamic_code_generation(parse_file(folder_path)))
-            current_list.append(search_package_installation(parse_file(folder_path)))
-            current_list.append(search_package_installation(parse_file(folder_path)))
+            for i in range(0,8):
+                current_list.append(0)
             label = "benign" if trigger else "malicious"
             current_list.append(label)
+            print("-----------------------------------------------")
+            print(current_list)
+            for dirpath, dirnames, filenames in os.walk(folder_path):
+                for fi in filenames:
+                    print(fi)
+                    local_list = []
+                    if fi.endswith(".js"):
+                        path_to_go = dirpath +"\\" + fi
+                        try:
+                            local_list.append(search_PII(parse_file(path_to_go)))
+                        except:
+                            local_list.append(0)
+                        local_list.append(0)
+                        local_list.append(0)
+                        local_list.append(0)
+                        local_list.append(0)
+                        local_list.append(0)
+                        local_list.append(0)
+                        local_list.append(0)
+                        '''local_list.append(search_file_sys_access(parse_file(path_to_go)))
+                        local_list.append(search_file_process_creation(parse_file(path_to_go)))
+                        local_list.append(search_network_access(parse_file(path_to_go)))
+                        local_list.append(search_Cryptographic_functionality(parse_file(path_to_go)))
+                        local_list.append(search_data_encoding(parse_file(path_to_go)))
+                        local_list.append(search_dynamic_code_generation(parse_file(path_to_go)))
+                        local_list.append(search_package_installation(parse_file(path_to_go)))'''
+                    for i in range(0, len(local_list)):
+                        if current_list[i+2] == 0:
+                            current_list[i+2] = local_list[i]
+            
             all_list.append(current_list)
     return all_list
 
@@ -258,7 +298,7 @@ if __name__ == '__main__':
     root_dir_benign =  "C:\\Users\\Amit\\AMIT\\cyberdetectiontaskfinal\\amalfi-artifact\data\\training_data\\benign"
     root_dir_malicious =  "C:\\Users\\Amit\\AMIT\\cyberdetectiontaskfinal\\amalfi-artifact\data\\training_data\\malicious"
     end_result = gather_data(root_dir_benign,True) + gather_data(root_dir_malicious,False)
-    exit()
+    #exit()
     full_path = "C:\\Users\\Amit\\AMIT\\cyberdetectiontaskfinal\\amalfi-artifact\\data\\dataset\\change-features.csv"
     with open(full_path, "w", newline="") as f:
         # Create a CSV writer object
