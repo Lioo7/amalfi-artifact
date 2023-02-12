@@ -190,14 +190,16 @@ def write_each_package_and_version_to_csv_and_create_dir(package_features, main_
         file_path = os.path.join(dir_path, "change-features.csv")
         with open(file_path, 'w', newline='') as f:
             writer = csv.writer(f)
-            for name, value in zip(header, features):
-                writer.writerow([name, value])
+            for feature, value in zip(header, features):
+                writer.writerow([feature, value])
         
         name_dir_path = os.path.join(main_dir, name)
         if not os.path.exists(name_dir_path):
             os.makedirs(name_dir_path)
         
         versions_file_path = os.path.join(name_dir_path, "versions.csv")
+        logging.error(f'versions_file_path: {versions_file_path}')
+        logging.error(f'version: {version}')
         with open(versions_file_path, "a", newline="") as file:
             writer = csv.writer(file)
             writer.writerow([version, datetime.datetime.now().isoformat()])
