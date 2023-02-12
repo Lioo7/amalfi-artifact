@@ -149,7 +149,7 @@ def search_package_installation(root_node) -> Literal[1, 0]:
     #In npm, pre-install and post-install are scripts that can
     be defined in the scripts section of the package.json file.
     These scripts are executed before and after the installation of packages, respectively.'''
-    keywords = ['preinstall', 'postinstall', 'npm install']
+    keywords = ['preinstall', 'postinstall', 'install', 'sudo']
 
     return general_search(root_node, keywords)
     
