@@ -200,7 +200,7 @@ def search_minified_code(directory_path) -> Literal[1, 0]:
 
         # Create a feature indicating whether the data is minified or not
         AVG_ENTROPY_THRESHOLD = 5
-        STD_DEV_ENTROPY_THRESHOLD = 0.5
+        STD_DEV_ENTROPY_THRESHOLD = 0.1
         if avg_entropy > AVG_ENTROPY_THRESHOLD and std_dev_entropy > STD_DEV_ENTROPY_THRESHOLD:
             is_minified = 1          
         logging.info(f'avg_entropy: {avg_entropy}')
@@ -386,7 +386,7 @@ def extract_features(root_dir: str, malicious) -> None:
                 has_license = does_contain_license(dirname[:index]) # 15
                 visited_packages.add(package_name)
             else:
-                logging.error(f"package_features: {package_features}")
+                logging.debug(f"package_features: {package_features}")
                 is_minified_code = package_features[package_name][11]
                 is_has_no_content = package_features[package_name][12]
                 longest_line = package_features[package_name][13] 
@@ -407,6 +407,7 @@ def extract_features(root_dir: str, malicious) -> None:
             logging.debug(f'old_inner_lst: {old_inner_lst[2:-6]}')
             # perform the bitwise operation between the new and old feature lists
             updated_inner_lst = bitwise_operation(new_inner_lst[2:-6], old_inner_lst[2:-6], '|')
+            logging.debug(f'updated_inner_lst: {updated_inner_lst}')
             
             pre_list = [name, version]
             past_list = [is_minified_code, is_has_no_content, longest_line, num_of_files, has_license, label]
@@ -435,5 +436,6 @@ def extract_features(root_dir: str, malicious) -> None:
 if __name__ == '__main__':
     benign_path = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/extracted-packages/training_data/benign'
     malicious_path = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/extracted-packages/training_data/malicious'
+    extract_features(benign_path, malicious=False)
     extract_features(malicious_path, malicious=True)
     

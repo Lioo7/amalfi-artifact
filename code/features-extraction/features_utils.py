@@ -41,38 +41,38 @@ def parse_file(file_name):
     root_node = tree.root_node
     return root_node
 
-def search_keyword_in_code(root_node, keywords, sub_keywords)->bool:
+def search_keyword_in_code(root_node, keywords, sub_keywords) -> bool:
     """
     This function searches for a keyword or sub keyword in the code using a provided root node.
     
     Parameters:
-    root_node (Node): The root node of the code tree.
-    keywords (list of str): A list of keywords to search for.
-    sub_keywords (dict of lists): A dictionary where the keys are the names of sub keywords, and the values are the lists of words that make up the sub keyword.
+        root_node (Node): The root node of the code tree.
+        keywords (list of str): A list of keywords to search for.
+        sub_keywords (dict of lists): A dictionary where the keys are the names of sub keywords, and the values are the lists of words that make up the sub keyword.
     
     Returns:
-    bool: True if a keyword or sub keyword is found, False otherwise.
+        bool: True if a keyword or sub keyword is found, False otherwise.
   
     TODO:
-    * current situation: the function stoping after the function find the first match
-    * what to improve: have to add the function the ability to count the number of occurrences of all keywords
+        * current situation: the function stops after the function finds the first match
+        * what to improve: have to add the function the ability to count the number of occurrences of all keywords
     """
     logging.debug(f"start func: search_keyword_in_code")
     found = False
-  
+    
     for child in root_node.children:
         # search if the child in one of the keywords
         logging.debug(f"child: {child.text.decode()}")
         if child.text.decode() in keywords:
             found = True
-            logging.info(f"keyword found!\nThe keyword that found is: {child.text.decode()}")
+            logging.info(f"keyword found!\nThe keyword that was found is: {child.text.decode()}")
             break
         # search if the child in one of the sub keywords
         elif found == False:
             for inner_keyword in sub_keywords.values():
                 # logging.debug(f"second loop, inner_keyword: {inner_keyword}")
                 if child.text.decode() in inner_keyword[0]:
-                    logging.info(f"sub keyword found!\nThe keyword that found is: {child.text.decode()}")
+                    logging.info(f"sub keyword found!\nThe keyword that was found is: {child.text.decode()}")
                     inner_keyword[1].append(child.text.decode())
                     if inner_keyword[1] == inner_keyword[0]:
                         logging.info(f"The entire sub keyword was found!\n{inner_keyword[1]} == {inner_keyword[0]}")
@@ -84,6 +84,9 @@ def search_keyword_in_code(root_node, keywords, sub_keywords)->bool:
             found = search_keyword_in_code(child, keywords, sub_keywords)
             if found:
                 break
+    
+    logging.debug(f"results of search_keyword_in_code: {found}")
+    return found
 
 def bitwise_operation(list1, list2, operation) -> list:
     """
