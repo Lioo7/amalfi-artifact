@@ -199,8 +199,8 @@ def search_minified_code(directory_path) -> Literal[1, 0]:
         std_dev_entropy = math.sqrt(sum((x - avg_entropy)**2 for x in entropy_values) / len(entropy_values))
 
         # Create a feature indicating whether the data is minified or not
-        AVG_ENTROPY_THRESHOLD = 4.5
-        STD_DEV_ENTROPY_THRESHOLD = 0.4
+        AVG_ENTROPY_THRESHOLD = 5
+        STD_DEV_ENTROPY_THRESHOLD = 0.5
         if avg_entropy > AVG_ENTROPY_THRESHOLD and std_dev_entropy > STD_DEV_ENTROPY_THRESHOLD:
             is_minified = 1          
         logging.info(f'avg_entropy: {avg_entropy}')
@@ -298,6 +298,30 @@ def num_of_files_in_the_package(directory_path: str) -> int:
         num_of_files += len(filenames)
             
     return num_of_files
+
+def does_contain_license(directory_path: str) -> bool:
+    """
+    The function returns true iff the package contain a license file.
+    
+    Args:
+    - directory_path (str): The path to the directory being checked.
+    
+    Returns:
+    - int: Returns true iff the package contain a license file.
+    """
+    logging.info("start func: is_contain_license")
+
+    # Indicates if a license file was found
+    flag = False 
+
+    # Loop over all the files in the directory tree rooted at directory_path
+    for _, _, filenames in os.walk(directory_path):
+        for filename in filenames:
+            if filename == 'LICENSE':
+                flag = True
+                return flag
+        
+    return flag
          
 def extract_features(root_dir: str, malicious) -> None:
     """
@@ -318,9 +342,9 @@ def extract_features(root_dir: str, malicious) -> None:
     
     package_features = {} # {package_name:[f1, f2, ..., fn]}
     visited_packages = set() # the set will contain the packages name that were traversed 
-    NUM_OF_FEATURES_INCLUDE = 16 # number of features include name, version and label
+    NUM_OF_FEATURES_INCLUDE = 17 # number of features include name, version and label
     
-    for dirname, subdirs, files in os.walk(root_dir):
+    for dirname, _, files in os.walk(root_dir):
         
         path_lst = dirname.split(os.path.sep)
         packages_type = "malicious" if malicious else "benign"
@@ -352,27 +376,30 @@ def extract_features(root_dir: str, malicious) -> None:
             is_data_encoding = search_data_encoding(parse_file(file_path)) # 7
             is_dynamic_code_generation = search_dynamic_code_generation(parse_file(file_path)) # 8
             is_package_installation = search_package_installation(parse_file(file_path)) # 9
+            is_geolocation = search_geolocation(parse_file(file_path)) # 10
             # check if the package was already processed
             if package_name not in visited_packages:  
                 logging.debug(f"{package_name} was not visit yet")
                 index = dirname.find("/package")
                 logging.debug(f"dirname[:index]: {dirname[:index]}")
-                is_minified_code = search_minified_code(dirname[:index]) # 10
-                is_has_no_content = search_packages_with_no_content(dirname[:index]) # 11
-                
+                is_minified_code = search_minified_code(dirname[:index]) # 11
+                is_has_no_content = search_packages_with_no_content(dirname[:index]) # 12
+                longest_line = longest_line_in_the_package # 13
+                num_of_files = num_of_files_in_the_package # 14
+                has_license = does_contain_license # 15
                 visited_packages.add(package_name)
             else:
                 is_minified_code = package_features[package_name][10]
-            is_geolocation = search_geolocation(parse_file(file_path)) # 12
-            longest_line = longest_line_in_the_package # 13
-            num_of_files = num_of_files_in_the_package # 14
-            label = packages_type # 15
+                is_has_no_content = search_packages_with_no_content(dirname[:index])
+                longest_line = longest_line_in_the_package 
+                num_of_files = num_of_files_in_the_package 
+            label = packages_type # 16
             
             # create a new list of the current package's features
             new_inner_lst = [name, version, is_PII, is_file_sys_access, is_process_creation, 
                              is_network_access, is_crypto_functionality, is_data_encoding, 
-                             is_dynamic_code_generation, is_package_installation, is_minified_code, 
-                             is_has_no_content, is_geolocation, longest_line, num_of_files, label]
+                             is_dynamic_code_generation, is_package_installation, is_geolocation, is_minified_code, 
+                             is_has_no_content, longest_line, num_of_files, has_license, label]
             
             # get the old feature list for the current package name
             old_inner_lst = package_features[package_name]
@@ -385,8 +412,8 @@ def extract_features(root_dir: str, malicious) -> None:
     
     headers = ['package','version','PII','file_sys_access','file_process_creation',
     'network_access','cryptographic_functionality', 'data_encoding',
-    'dynamic_code_generation','package_installation', 'is_minified_code', 
-    'is_has_no_content', 'is_geolocation', 'longest_line', 'num_of_files','label']
+    'dynamic_code_generation','package_installation', 'geolocation', 'minified_code', 
+    'no_content', 'longest_line', 'num_of_files', 'has_license', 'label']
     
     # define the path for the output CSV file
     csv_file = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/dataset/change-features.csv'
@@ -395,10 +422,10 @@ def extract_features(root_dir: str, malicious) -> None:
     method = 'a' if malicious else "w"
     
     # call the write_dict_to_csv function to write the package_features dictionary to the CSV file
-    # write_dict_to_csv(dict_data=package_features, csv_file=csv_file, headers=headers, method=method)
+    write_dict_to_csv(dict_data=package_features, csv_file=csv_file, headers=headers, method=method)
     
-    main_dir = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/dataset'
-    write_each_package_and_version_to_csv_and_create_dir(package_features=package_features, main_dir=main_dir, header=headers[2:-1])
+    # main_dir = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/dataset'
+    # write_each_package_and_version_to_csv_and_create_dir(package_features=package_features, main_dir=main_dir, header=headers[2:-1])
     
 
 if __name__ == '__main__':
