@@ -220,8 +220,7 @@ def calculate_entropy(data) -> float | Literal[0]:
     Returns:
         entropy (float): the entropy of the input data.
     """
-    
-    logging.info("start func: calculate_entropy")
+    logging.debug("start func: calculate_entropy")
 
     entropy = 0
     # Iterate over all possible values of bytes (0 to 255)
@@ -234,3 +233,23 @@ def calculate_entropy(data) -> float | Literal[0]:
             
     # Return the entropy value
     return entropy
+
+def find_longest_line_in_the_file(filename) -> int:
+    """
+    This function takes in a filename as an argument and returns the length of the longest line in the file.
+
+    Parameters:
+    filename (str): The name of the file to be read.
+
+    Returns:
+    int: The length of the longest line in the file.
+    """
+    logging.debug("start func: find_longest_line")
+    
+    with open(filename, 'r') as file:
+        longest_line = 0
+        for line in file:
+            if len(line) > longest_line:
+                longest_line = len(line)
+                 
+    return longest_line

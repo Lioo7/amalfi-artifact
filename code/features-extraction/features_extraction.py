@@ -1,7 +1,8 @@
 
 from typing import Literal
 from features_utils import bitwise_operation, general_search, parse_file, extract_package_details\
-, write_dict_to_csv, write_each_package_and_version_to_csv_and_create_dir, calculate_entropy
+, write_dict_to_csv, write_each_package_and_version_to_csv_and_create_dir, calculate_entropy\
+    , find_longest_line_in_the_file
 import logging
 import math
 import os
@@ -38,7 +39,7 @@ def search_file_sys_access(root_node) -> Literal[1, 0]:
     It provides functions for reading and writing files,
     creating and deleting directories, and more.'''
 
-    keywords = ['read','write','file', 'require("fs")']
+    keywords = ['read','write','file', 'require("fs")', 'os = require("os")', 'platform', 'hostname', 'system32']
     
     logging.info("start func: search_file_sys_access")
 
@@ -81,7 +82,7 @@ def search_network_access(root_node) -> Literal[1, 0]:
     thus we marked 'send' keyword'''
     
 
-    keywords = ['send', 'export', 'upload' ,'post', 'XMLHttpRequest', 'submit']
+    keywords = ['send', 'export', 'upload' ,'post', 'XMLHttpRequest', 'submit', 'dns', 'nodemailer']
     return general_search(root_node, keywords)     
 
 def search_cryptographic_functionality(root_node) -> Literal[1, 0]:
@@ -152,19 +153,10 @@ def search_package_installation(root_node) -> Literal[1, 0]:
     keywords = ['preinstall', 'postinstall', 'install', 'sudo']
 
     return general_search(root_node, keywords)
-    
+
 def search_minified_code(directory_path) -> Literal[1, 0]:
     """
-    5
-    Presence of minified code (to avoid detection) or binary files (such as binary executables)
-    """
-    logging.info("start func: search_minified_code")
-    is_minified = extract_is_minified_feature(directory_path)
-    
-    return is_minified
-
-def extract_is_minified_feature(directory_path) -> Literal[1, 0]:
-    """
+    (5) Presence of minified code (to avoid detection) or binary files (such as binary executables)
     Extracts the is_minified feature from the files in the directory.
 
     Parameters:
@@ -173,7 +165,7 @@ def extract_is_minified_feature(directory_path) -> Literal[1, 0]:
     Returns:
         is_minified (int): 1 if the code is minified, 0 otherwise.
     """ 
-    logging.debug("start func: extract_is_minified_feature")
+    logging.info("start func: search_minified_code")
     logging.debug(f'directory_path: {directory_path}')
     
     # Store the entropy values of each file in the directory
@@ -217,7 +209,7 @@ def extract_is_minified_feature(directory_path) -> Literal[1, 0]:
         
     return is_minified
 
-def extract_is_has_no_content(directory_path: str) -> Literal[1, 0]:
+def search_packages_with_no_content(directory_path: str) -> Literal[1, 0]:
     """
     The function takes in a directory path as input and returns 1 if the directory does not contain any '.js' or '.ts' files, and 0 otherwise.
     
@@ -250,6 +242,40 @@ def search_geolocation(root_node) -> Literal[1, 0]:
     keywords = ['ipgeolocation']
 
     return general_search(root_node, keywords)
+
+def longest_line_in_the_package(directory_path: str) -> int:
+    """
+    The function returns the longest line in the package.
+    Malicious packages sometimes use obfuscation techniques, 
+    that write the whole code in the file as one line.
+    
+    Args:
+    - directory_path (str): The path to the directory being checked.
+    
+    Returns:
+    - int: Returns the longest line in the package.
+    """
+    logging.info("start func: longest_line_in_the_package")
+
+    # Store the longest line in the package
+    longest_line_package = 0
+
+    # Loop over all the files in the directory tree rooted at directory_path
+    for dirpath, dirnames, filenames in os.walk(directory_path):
+        for filename in filenames:
+            logging.debug(f'filename: {filename}')
+            if not filename.endswith(".js") and not filename.endswith(".ts"):
+                logging.debug('ignore')
+                continue
+            
+            # Construct the file path for each file
+            file_path = os.path.join(dirpath, filename)
+            # Read the contents of the file as binary data
+            longest_line_file = find_longest_line_in_the_file(file_path)
+            if longest_line_file > longest_line_package:
+                longest_line_package = longest_line_file
+        
+    return longest_line_package
          
 def extract_features(root_dir: str, malicious) -> None:
     """
@@ -310,7 +336,7 @@ def extract_features(root_dir: str, malicious) -> None:
                 index = dirname.find("/package")
                 logging.debug(f"dirname[:index]: {dirname[:index]}")
                 is_minified_code = search_minified_code(dirname[:index]) # 10
-                is_has_no_content = extract_is_has_no_content(dirname[:index]) # 11
+                is_has_no_content = search_packages_with_no_content(dirname[:index]) # 11
                 
                 visited_packages.add(package_name)
             else:
