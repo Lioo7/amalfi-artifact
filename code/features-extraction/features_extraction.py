@@ -1,7 +1,7 @@
 
 from typing import Literal
 from calculate_entropy import extract_is_minified_feature
-from util import bitwise_operation, general_search, parse_file, extract_package_details, write_dict_to_csv
+from util import bitwise_operation, general_search, parse_file, extract_package_details, write_dict_to_csv, write_each_package_and_version_to_csv_and_create_dir
 from packages_without_content import extract_is_has_no_content
 import logging
 import os
@@ -244,6 +244,10 @@ def extract_features(root_dir: str, malicious) -> None:
             # update the value in the package_features dictionary with the updated feature list
             package_features[package_name] = [name] + [version] + updated_inner_lst + [label]
     
+    headers = ['package','version','PII','file_sys_access','file_process_creation',
+    'network_access','cryptographic_functionality', 'data_encoding',
+    'dynamic_code_generation','package_installation', 'is_minified_code', 'is_has_no_content','label']
+    
     # define the path for the output CSV file
     csv_file = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/dataset/change-features.csv'
     
@@ -251,8 +255,11 @@ def extract_features(root_dir: str, malicious) -> None:
     method = 'a' if malicious else "w"
     
     # call the write_dict_to_csv function to write the package_features dictionary to the CSV file
-    write_dict_to_csv(dict_data=package_features, csv_file=csv_file, method=method)
-
+    write_dict_to_csv(dict_data=package_features, csv_file=csv_file, headers=headers, method=method)
+    
+    # main_dir = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/dataset'
+    # write_each_package_and_version_to_csv_and_create_dir(package_features=package_features, main_dir=main_dir, header=headers[2:-1])
+    
 
 if __name__ == '__main__':
     benign_path = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/extracted-packages/training_data/benign'

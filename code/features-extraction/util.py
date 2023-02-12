@@ -2,6 +2,8 @@ from tree_sitter import Language, Parser
 from typing import Literal
 import logging
 import csv
+import datetime
+import os
 
 """
 TODO:
@@ -138,7 +140,7 @@ def extract_package_details(package_name: str) -> tuple:
     name, version = package_name.split('-v-')
     return (name, version)
 
-def write_dict_to_csv(dict_data, csv_file, method='w') -> None:
+def write_dict_to_csv(dict_data, csv_file, headers, method='w') -> None:
     """
     Writes the values of a dictionary to a CSV file.
 
@@ -147,15 +149,12 @@ def write_dict_to_csv(dict_data, csv_file, method='w') -> None:
         csv_file (str): The path to the CSV file.
         method (str, optional): The method to use when opening the CSV file.
             'w' for write (default), 'a' for append.
+        headers (list): List of the headers 
 
     Returns:
         None
     """
     logging.debug("start func: write_dict_to_csv")
-
-    headers = ['package','version','PII','file_sys_access','file_process_creation',
-        'network_access','cryptographic_functionality', 'data_encoding',
-        'dynamic_code_generation','package_installation', 'is_minified_code', 'is_has_no_content','label']
 
     with open(csv_file, method, newline='') as f:
         writer = csv.writer(f)
@@ -164,3 +163,41 @@ def write_dict_to_csv(dict_data, csv_file, method='w') -> None:
         for values in dict_data.values():
             writer.writerow(values)
 
+def write_each_package_and_version_to_csv_and_create_dir(package_features, main_dir, header):
+    """
+    Write the values of the 'package_features' dictionary to separate CSV files, such that every key value of each key 
+    will be written to a different CSV file. The name of each CSV file will be 'change-features' and it will be stored in 
+    the directories: 'name'/'version' (the directories will be created if they do not exist).
+    Additionally, a CSV file named 'versions' will be written in the 'name' directory and will contain the version and 
+    the date/time of the file creation.
+
+    Parameters:
+    - package_features (dict): a dictionary in the format: 
+                            "{package_name:[name, version, feature1, feature2, ..., feature9, label ]}"
+    - main_dir (str): the path to the main directory where the CSV files will be saved
+    - headers (list): List of the headers 
+
+    Returns: None
+    """
+
+    for package, values in package_features.items():
+        name, version, *features, label = values
+
+        dir_path = os.path.join(main_dir, name, version)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+
+        file_path = os.path.join(dir_path, "change-features.csv")
+        with open(file_path, 'w', newline='') as f:
+            writer = csv.writer(f)
+            for name, value in zip(header, features):
+                writer.writerow([name, value])
+        
+        name_dir_path = os.path.join(main_dir, name)
+        if not os.path.exists(name_dir_path):
+            os.makedirs(name_dir_path)
+        
+        versions_file_path = os.path.join(name_dir_path, "versions.csv")
+        with open(versions_file_path, "a", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow([version, datetime.datetime.now().isoformat()])
