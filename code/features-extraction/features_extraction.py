@@ -299,29 +299,25 @@ def num_of_files_in_the_package(directory_path: str) -> int:
             
     return num_of_files
 
-def does_contain_license(directory_path: str) -> bool:
+def does_contain_license(directory_path: str) -> int:
     """
-    The function returns true iff the package contain a license file.
+    The function returns 1 if the package contain a license file and 0 otherwise.
     
     Args:
     - directory_path (str): The path to the directory being checked.
     
     Returns:
-    - int: Returns true iff the package contain a license file.
+    - int: Returns 1 if the package contain a license file and 0 otherwise.
     """
     logging.info("start func: is_contain_license")
-
-    # Indicates if a license file was found
-    flag = False 
 
     # Loop over all the files in the directory tree rooted at directory_path
     for _, _, filenames in os.walk(directory_path):
         for filename in filenames:
             if filename == 'LICENSE':
-                flag = True
-                return flag
+                return 1
         
-    return flag
+    return 0
          
 def extract_features(root_dir: str, malicious) -> None:
     """
@@ -378,21 +374,24 @@ def extract_features(root_dir: str, malicious) -> None:
             is_package_installation = search_package_installation(parse_file(file_path)) # 9
             is_geolocation = search_geolocation(parse_file(file_path)) # 10
             # check if the package was already processed
-            if package_name not in visited_packages:  
+            if package_name not in visited_packages: 
+                logging.info(f'package_name: {package_name}') 
                 logging.debug(f"{package_name} was not visit yet")
                 index = dirname.find("/package")
                 logging.debug(f"dirname[:index]: {dirname[:index]}")
                 is_minified_code = search_minified_code(dirname[:index]) # 11
                 is_has_no_content = search_packages_with_no_content(dirname[:index]) # 12
-                longest_line = longest_line_in_the_package # 13
-                num_of_files = num_of_files_in_the_package # 14
-                has_license = does_contain_license # 15
+                longest_line = longest_line_in_the_package(dirname[:index]) # 13
+                num_of_files = num_of_files_in_the_package(dirname[:index]) # 14
+                has_license = does_contain_license(dirname[:index]) # 15
                 visited_packages.add(package_name)
             else:
-                is_minified_code = package_features[package_name][10]
-                is_has_no_content = search_packages_with_no_content(dirname[:index])
-                longest_line = longest_line_in_the_package 
-                num_of_files = num_of_files_in_the_package 
+                logging.error(f"package_features: {package_features}")
+                is_minified_code = package_features[package_name][11]
+                is_has_no_content = package_features[package_name][12]
+                longest_line = package_features[package_name][13] 
+                num_of_files = package_features[package_name][14]
+                has_license = package_features[package_name][15]
             label = packages_type # 16
             
             # create a new list of the current package's features
@@ -404,11 +403,16 @@ def extract_features(root_dir: str, malicious) -> None:
             # get the old feature list for the current package name
             old_inner_lst = package_features[package_name]
             
+            logging.debug(f'new_inner_lst: {new_inner_lst[2:-6]}')
+            logging.debug(f'old_inner_lst: {old_inner_lst[2:-6]}')
             # perform the bitwise operation between the new and old feature lists
-            updated_inner_lst = bitwise_operation(new_inner_lst[2:-1], old_inner_lst[2:-1], '|')
+            updated_inner_lst = bitwise_operation(new_inner_lst[2:-6], old_inner_lst[2:-6], '|')
+            
+            pre_list = [name, version]
+            past_list = [is_minified_code, is_has_no_content, longest_line, num_of_files, has_license, label]
             
             # update the value in the package_features dictionary with the updated feature list
-            package_features[package_name] = [name] + [version] + updated_inner_lst + [label]
+            package_features[package_name] = pre_list + updated_inner_lst + past_list
     
     headers = ['package','version','PII','file_sys_access','file_process_creation',
     'network_access','cryptographic_functionality', 'data_encoding',
@@ -416,7 +420,7 @@ def extract_features(root_dir: str, malicious) -> None:
     'no_content', 'longest_line', 'num_of_files', 'has_license', 'label']
     
     # define the path for the output CSV file
-    csv_file = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/dataset/change-features.csv'
+    csv_file = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/dataset/dataset-train.csv'
     
     # decide whether to write the data in append mode or write mode based on the input malicious flag
     method = 'a' if malicious else "w"
