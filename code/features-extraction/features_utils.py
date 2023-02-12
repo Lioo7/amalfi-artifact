@@ -4,6 +4,7 @@ import logging
 import csv
 import datetime
 import os
+import math
 
 """
 TODO:
@@ -41,41 +42,48 @@ def parse_file(file_name):
     return root_node
 
 def search_keyword_in_code(root_node, keywords, sub_keywords)->bool:
-  """
-  TODO:
-  * current situation: the function stoping after the function find the first match
-  * what to improve: have to add the function the ability to count the number of occurrences of all keywords
-  """
-  logging.debug(f"start func: search_keyword_in_code")
-  found = False
+    """
+    This function searches for a keyword or sub keyword in the code using a provided root node.
+    
+    Parameters:
+    root_node (Node): The root node of the code tree.
+    keywords (list of str): A list of keywords to search for.
+    sub_keywords (dict of lists): A dictionary where the keys are the names of sub keywords, and the values are the lists of words that make up the sub keyword.
+    
+    Returns:
+    bool: True if a keyword or sub keyword is found, False otherwise.
   
-  for child in root_node.children:
-    # search if the child in one of the keywords
-    logging.debug(f"child: {child.text.decode()}")
-    if child.text.decode() in keywords:
-        found = True
-        logging.info(f"keyword found!\nThe keyword that found is: {child.text.decode()}")
-        break
-    # search if the child in one of the sub keywords
-    elif found == False:
-      for inner_keyword in sub_keywords.values():
-        # logging.debug(f"second loop, inner_keyword: {inner_keyword}")
-        if child.text.decode() in inner_keyword[0]:
-          logging.info(f"sub keyword found!\nThe keyword that found is: {child.text.decode()}")
-          inner_keyword[1].append(child.text.decode())
-          if inner_keyword[1] == inner_keyword[0]:
-            logging.info(f"The entire sub keyword was found!\n{inner_keyword[1]} == {inner_keyword[0]}")
+    TODO:
+    * current situation: the function stoping after the function find the first match
+    * what to improve: have to add the function the ability to count the number of occurrences of all keywords
+    """
+    logging.debug(f"start func: search_keyword_in_code")
+    found = False
+  
+    for child in root_node.children:
+        # search if the child in one of the keywords
+        logging.debug(f"child: {child.text.decode()}")
+        if child.text.decode() in keywords:
             found = True
+            logging.info(f"keyword found!\nThe keyword that found is: {child.text.decode()}")
             break
-    # recursion 
-    if found == False:
-        logging.debug("calling recursion")
-        found = search_keyword_in_code(child, keywords, sub_keywords)
-        if found:
-            break
-  
-  logging.debug(f"results of search_keyword_in_code: {found}")
-  return found
+        # search if the child in one of the sub keywords
+        elif found == False:
+            for inner_keyword in sub_keywords.values():
+                # logging.debug(f"second loop, inner_keyword: {inner_keyword}")
+                if child.text.decode() in inner_keyword[0]:
+                    logging.info(f"sub keyword found!\nThe keyword that found is: {child.text.decode()}")
+                    inner_keyword[1].append(child.text.decode())
+                    if inner_keyword[1] == inner_keyword[0]:
+                        logging.info(f"The entire sub keyword was found!\n{inner_keyword[1]} == {inner_keyword[0]}")
+                        found = True
+                        break
+        # recursion 
+        if found == False:
+            logging.debug("calling recursion")
+            found = search_keyword_in_code(child, keywords, sub_keywords)
+            if found:
+                break
 
 def bitwise_operation(list1, list2, operation) -> list:
     """
@@ -198,8 +206,31 @@ def write_each_package_and_version_to_csv_and_create_dir(package_features, main_
             os.makedirs(name_dir_path)
         
         versions_file_path = os.path.join(name_dir_path, "versions.csv")
-        logging.error(f'versions_file_path: {versions_file_path}')
-        logging.error(f'version: {version}')
         with open(versions_file_path, "a", newline="") as file:
             writer = csv.writer(file)
             writer.writerow([version, datetime.datetime.now().isoformat()])
+            
+def calculate_entropy(data) -> float | Literal[0]:
+    """
+    Calculates the entropy of the input data.
+
+    Parameters:
+        data (bytes): binary data to calculate the entropy for.
+
+    Returns:
+        entropy (float): the entropy of the input data.
+    """
+    
+    logging.info("start func: calculate_entropy")
+
+    entropy = 0
+    # Iterate over all possible values of bytes (0 to 255)
+    for x in range(256):
+        # Calculate the probability of the byte value x appearing in the data
+        p_x = float(data.count(x.to_bytes(1, "big")))/len(data)
+        # If the probability is greater than 0, add to the entropy value
+        if p_x > 0:
+            entropy -= p_x * math.log2(p_x)
+            
+    # Return the entropy value
+    return entropy

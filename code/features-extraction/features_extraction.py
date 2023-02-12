@@ -1,9 +1,9 @@
 
 from typing import Literal
-from calculate_entropy import extract_is_minified_feature
-from util import bitwise_operation, general_search, parse_file, extract_package_details, write_dict_to_csv, write_each_package_and_version_to_csv_and_create_dir
-from packages_without_content import extract_is_has_no_content
+from features_utils import bitwise_operation, general_search, parse_file, extract_package_details\
+, write_dict_to_csv, write_each_package_and_version_to_csv_and_create_dir, calculate_entropy
 import logging
+import math
 import os
 
 LOGֹ_FORMAT = "%(levelname)s, time: %(asctime)s , line: %(lineno)d- %(message)s "
@@ -26,7 +26,6 @@ def search_PII(root_node) -> Literal[1, 0]:
     return general_search(root_node, keywords)
     
 def search_file_sys_access(root_node) -> Literal[1, 0]:
-    
     """
     (2) Access to specific system resources:
     (a) File-system access: reading and writing files
@@ -163,11 +162,89 @@ def search_minified_code(directory_path) -> Literal[1, 0]:
     is_minified = extract_is_minified_feature(directory_path)
     
     return is_minified
+
+def extract_is_minified_feature(directory_path) -> Literal[1, 0]:
+    """
+    Extracts the is_minified feature from the files in the directory.
+
+    Parameters:
+        directory_path (str): the path to the directory to extract features from.
+
+    Returns:
+        is_minified (int): 1 if the code is minified, 0 otherwise.
+    """ 
+    logging.debug("start func: extract_is_minified_feature")
+    logging.debug(f'directory_path: {directory_path}')
+    
+    # Store the entropy values of each file in the directory
+    entropy_values = []
+
+    # Loop over all the files in the directory tree rooted at directory_path
+    for dirpath, dirnames, filenames in os.walk(directory_path):
+        for filename in filenames:
+            logging.debug(f'filename: {filename}')
+            if not filename.endswith(".js") and not filename.endswith(".ts"):
+                logging.debug('ignore')
+                continue
             
+            # Construct the file path for each file
+            file_path = os.path.join(dirpath, filename)
+            # Read the contents of the file as binary data
+            with open(file_path, "rb") as f:
+                data = f.read()
+            if len(data) > 0:
+                # Calculate the entropy of the binary data
+                entropy = calculate_entropy(data)
+                logging.debug(f"entropy: {entropy}")
+                # Append the entropy to the list of entropy values
+                entropy_values.append(entropy)
+
+    is_minified = 0
+
+    # Calculate the average entropy and standard deviation of the entropy values
+    if len(entropy_values) != 0:
+        avg_entropy = sum(entropy_values) / len(entropy_values)
+        std_dev_entropy = math.sqrt(sum((x - avg_entropy)**2 for x in entropy_values) / len(entropy_values))
+
+        # Create a feature indicating whether the data is minified or not
+        AVG_ENTROPY_THRESHOLD = 4.5
+        STD_DEV_ENTROPY_THRESHOLD = 0.4
+        if avg_entropy > AVG_ENTROPY_THRESHOLD and std_dev_entropy > STD_DEV_ENTROPY_THRESHOLD:
+            is_minified = 1          
+        logging.info(f'avg_entropy: {avg_entropy}')
+        logging.info(f'std_dev_entropy: {std_dev_entropy}')
+        logging.info(f'is_minified: {is_minified}')
+        
+    return is_minified
+
+def extract_is_has_no_content(directory_path: str) -> Literal[1, 0]:
+    """
+    The function takes in a directory path as input and returns 1 if the directory does not contain any '.js' or '.ts' files, and 0 otherwise.
+    
+    Args:
+    - directory_path (str): The path to the directory being checked.
+    
+    Returns:
+    - int: Returns 1 if the directory does not contain any '.js' or '.ts' files and 0 otherwise.
+    
+    """
+    logging.info("start func: extract_is_has_no_content")
+        
+    # Loop over all the files in the directory tree rooted at directory_path
+    for dirpath, dirnames, filenames in os.walk(directory_path):
+        for filename in filenames:
+            if not filename.endswith(".js") and not filename.endswith(".ts"):
+                continue
+            else:
+                return 0
+        
+    return 1
+         
 def extract_features(root_dir: str, malicious) -> None:
     """
     This function is used to traverse a given directory and extract features of each javascript file in it.
-    The extracted features are saved in a dictionary named `package_features` in the format of `{package_name: [feature_1, feature_2, ..., feature_n]}`.
+    The extracted features are saved in a dictionary named `package_features` 
+    in the format of `{package_name: [feature_1, feature_2, ..., feature_n]}`.
 
     Args:
     - root_dir (str): The path of the root directory to traverse.
