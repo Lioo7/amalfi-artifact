@@ -239,6 +239,17 @@ def extract_is_has_no_content(directory_path: str) -> Literal[1, 0]:
                 return 0
         
     return 1
+
+def search_geolocation(root_node) -> Literal[1, 0]:
+    """
+    search_geolocation: unautherized acess to the location of the device 
+    """
+    logging.info("start func: search_location")
+
+    # searching for an API that gets the location of the device base on its IP.   
+    keywords = ['ipgeolocation']
+
+    return general_search(root_node, keywords)
          
 def extract_features(root_dir: str, malicious) -> None:
     """
@@ -259,7 +270,7 @@ def extract_features(root_dir: str, malicious) -> None:
     
     package_features = {} # {package_name:[f1, f2, ..., fn]}
     visited_packages = set() # the set will contain the packages name that were traversed 
-    NUM_OF_FEATURES_INCLUDE = 13 # number of features include name, version and label
+    NUM_OF_FEATURES_INCLUDE = 14 # number of features include name, version and label
     
     for dirname, subdirs, files in os.walk(root_dir):
         
@@ -305,12 +316,13 @@ def extract_features(root_dir: str, malicious) -> None:
             else:
                 is_minified_code = package_features[package_name][10]
             label = packages_type # 12
+            is_geolocation = search_geolocation(parse_file(file_path)) # 13
                 
             # create a new list of the current package's features
             new_inner_lst = [name, version, is_PII, is_file_sys_access, is_process_creation, 
                              is_network_access, is_crypto_functionality, is_data_encoding, 
                              is_dynamic_code_generation, is_package_installation, is_minified_code, 
-                             is_has_no_content, label]
+                             is_has_no_content, is_geolocation, label]
             
             # get the old feature list for the current package name
             old_inner_lst = package_features[package_name]
@@ -323,7 +335,7 @@ def extract_features(root_dir: str, malicious) -> None:
     
     headers = ['package','version','PII','file_sys_access','file_process_creation',
     'network_access','cryptographic_functionality', 'data_encoding',
-    'dynamic_code_generation','package_installation', 'is_minified_code', 'is_has_no_content','label']
+    'dynamic_code_generation','package_installation', 'is_minified_code', 'is_has_no_content', 'is_geolocation','label']
     
     # define the path for the output CSV file
     csv_file = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/dataset/change-features.csv'
@@ -342,3 +354,4 @@ if __name__ == '__main__':
     benign_path = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/extracted-packages/training_data/benign'
     malicious_path = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/extracted-packages/training_data/malicious'
     extract_features(malicious_path, malicious=True)
+    
