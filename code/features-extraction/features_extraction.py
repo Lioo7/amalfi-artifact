@@ -94,7 +94,7 @@ def search_cryptographic_functionality(root_node) -> Literal[1, 0]:
 
     '''(3)(a) Cryptographic functionality
     mining: The process of finding a hash that meets certain criteria in a cryptocurrency network.'''
-    keywords = ['crypto', 'mining']
+    keywords = ['crypto', 'mining', 'miner', 'cpu']
     
     return general_search(root_node, keywords)
 
@@ -276,6 +276,28 @@ def longest_line_in_the_package(directory_path: str) -> int:
                 longest_line_package = longest_line_file
         
     return longest_line_package
+
+def num_of_files_in_the_package(directory_path: str) -> int:
+    """
+    The function returns the number of files in the package.
+    Malicious packages often tend to contain a very small amount of files.
+    
+    Args:
+    - directory_path (str): The path to the directory being checked.
+    
+    Returns:
+    - int: Returns the of files in the package.
+    """
+    logging.info("start func: num_of_files_in_the_package")
+
+    # Store the number of files in the package
+    num_of_files = 0
+
+    # Loop over all the files in the directory tree rooted at directory_path
+    for _, _, filenames in os.walk(directory_path):
+        num_of_files += len(filenames)
+            
+    return num_of_files
          
 def extract_features(root_dir: str, malicious) -> None:
     """
@@ -296,7 +318,7 @@ def extract_features(root_dir: str, malicious) -> None:
     
     package_features = {} # {package_name:[f1, f2, ..., fn]}
     visited_packages = set() # the set will contain the packages name that were traversed 
-    NUM_OF_FEATURES_INCLUDE = 14 # number of features include name, version and label
+    NUM_OF_FEATURES_INCLUDE = 16 # number of features include name, version and label
     
     for dirname, subdirs, files in os.walk(root_dir):
         
@@ -341,14 +363,16 @@ def extract_features(root_dir: str, malicious) -> None:
                 visited_packages.add(package_name)
             else:
                 is_minified_code = package_features[package_name][10]
-            label = packages_type # 12
-            is_geolocation = search_geolocation(parse_file(file_path)) # 13
-                
+            is_geolocation = search_geolocation(parse_file(file_path)) # 12
+            longest_line = longest_line_in_the_package # 13
+            num_of_files = num_of_files_in_the_package # 14
+            label = packages_type # 15
+            
             # create a new list of the current package's features
             new_inner_lst = [name, version, is_PII, is_file_sys_access, is_process_creation, 
                              is_network_access, is_crypto_functionality, is_data_encoding, 
                              is_dynamic_code_generation, is_package_installation, is_minified_code, 
-                             is_has_no_content, is_geolocation, label]
+                             is_has_no_content, is_geolocation, longest_line, num_of_files, label]
             
             # get the old feature list for the current package name
             old_inner_lst = package_features[package_name]
@@ -361,7 +385,8 @@ def extract_features(root_dir: str, malicious) -> None:
     
     headers = ['package','version','PII','file_sys_access','file_process_creation',
     'network_access','cryptographic_functionality', 'data_encoding',
-    'dynamic_code_generation','package_installation', 'is_minified_code', 'is_has_no_content', 'is_geolocation','label']
+    'dynamic_code_generation','package_installation', 'is_minified_code', 
+    'is_has_no_content', 'is_geolocation', 'longest_line', 'num_of_files','label']
     
     # define the path for the output CSV file
     csv_file = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/dataset/change-features.csv'
