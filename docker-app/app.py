@@ -10,10 +10,13 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import confusion_matrix
 import joblib
-
+import hashlib
+import json
+import csv
 from typing import Literal
 import math
 import datetime
+import subprocess
 from tree_sitter import Language, Parser
 #----------------------------------------------------------------------------------------------
 #extract tgz
@@ -379,6 +382,64 @@ def extract_features(root_dir: str) -> None:
             package_features[package_name] = pre_list + updated_inner_lst + past_list
             
     return list(package_features.values())[0][2:]
+
+# ========================clone-detactor===========================
+def hash_package(root):
+    """
+    Compute an md5 hash of all files under root, visiting them in deterministic order.
+    `package.json` files are stripped of their `name` and `version` fields.
+    """
+    m = hashlib.md5()
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames.sort()
+        for filename in sorted(filenames):
+            path = os.path.join(dirpath, filename)
+            m.update(f"{os.path.relpath(path, root)}\n".encode("utf-8"))
+            if filename == "package.json":
+                pkg = json.load(open(path))
+                pkg["name"] = ""
+                pkg["version"] = ""
+                m.update(json.dumps(pkg, sort_keys=True).encode("utf-8"))
+            else:
+                try:
+                    with open(path, "rb") as f:
+                        m.update(f.read())
+                except:
+                    print(f'ERROR: path {path}')
+    return m.hexdigest()
+
+def clone_detactor(package_name):
+    hash = hash_package(package_name)
+    malicious = 0 # not malicious
+    malicious_file = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/docker-app/malicious_hash.csv'
+    with open(malicious_file, 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            if row[0] == hash:
+                malicious = 1 # found
+                break
+            
+    return malicious
+
+# ========================reproducer===========================
+def reproduce(package_name):
+    # name, version = extract_package_details(package_name) # 0, 1
+    # # Format the package name and version
+    # formatted_package = f"{name}@{version}"
+    # outdir = "/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/docker-app/outdir"
+    
+    # # Run the script
+    # result = subprocess.run(["./reproduce-package.sh", formatted_package, outdir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    
+    # # Check the result
+    # if result.returncode == 0:
+    #     print(f"Successfully reproduced package {formatted_package}.")
+    #     return 0
+    # else:
+    #     print(f"Failed to reproduce package {formatted_package}. Error: {result.stderr.decode()}")
+    #     return 1
+    return 1
+
 #----------------------------------------------------------------------------------
 #test on model
 
@@ -388,25 +449,35 @@ fileData.close()
 
 def predictInput(file_name):
     output = extract_features(file_name)
-    st.text(f"final output: {output}")
-    #st.text(f"first output: {extract_features(file_name)}")
-    #st.text(f"second output: {output}")
+    # st.text(f"final output: {output}")
+
     result = myModel.predict(np.array(output).reshape(1,-1))
     return result[0]
 	
 def displayResult(input_file):
-	try:
-		#output = model.predict([[int(recID),int(dur),int(src_bytes_input),int(dst_bytes_input)]])[0]
-		st.text(f"input file: {input_file}")
-		output = predictInput(input_file)
-		if output == -1:
-			output = "1 - anomaly"
-		elif output == 1:
-			output = "0 - normal"
-		st.text(f"output: {output}")
-	except Exception as er:
-		st.text("could not calculate")
-		st.text(f"er: {er}")
+    try:
+        st.text(f"input file: {input_file}")
+        st.text("Run the model")
+        prediction = predictInput(input_file)
+
+        split_dir = input_file.split('/')
+        package_name = split_dir[-1]
+
+        if prediction == -1:
+            st.text("Run the reproducer")
+            output = reproduce(package_name)
+        else:
+            output = clone_detactor(package_name)
+            st.text("Run the clone-detactor")
+
+        if output == 1:
+            output = "Malicious"
+        elif output == 0:
+            output = "Benign"
+        st.text(f"output: {output}")
+    except Exception as er:
+        st.text("could not calculate")
+        st.text(f"er: {er}")
 	
 if __name__ == "__main__":
     file = extract_tgz()
