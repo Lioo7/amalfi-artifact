@@ -2,7 +2,7 @@
 from typing import Literal
 from features_utils import bitwise_operation, general_search, parse_file, extract_package_details\
 , write_dict_to_csv, write_each_package_and_version_to_csv_and_create_dir, calculate_entropy\
-    , find_longest_line_in_the_file
+    , find_longest_line_in_the_file, search_substring_in_package
 import logging
 import math
 import os
@@ -232,7 +232,7 @@ def search_packages_with_no_content(directory_path: str) -> Literal[1, 0]:
         
     return 1
 
-def search_geolocation(root_node) -> Literal[1, 0]:
+def search_geolocation(directory_path) -> Literal[1, 0]:
     """
     search_geolocation: unautherized acess to the location of the device 
     """
@@ -241,7 +241,7 @@ def search_geolocation(root_node) -> Literal[1, 0]:
     # searching for an API that gets the location of the device base on its IP.   
     keywords = ['ipgeolocation']
 
-    return general_search(root_node, keywords)
+    return search_substring_in_package(directory_path, keywords)
 
 def longest_line_in_the_package(directory_path: str) -> int:
     """
@@ -372,13 +372,13 @@ def extract_features(root_dir: str, malicious) -> None:
             is_data_encoding = search_data_encoding(parse_file(file_path)) # 7
             is_dynamic_code_generation = search_dynamic_code_generation(parse_file(file_path)) # 8
             is_package_installation = search_package_installation(parse_file(file_path)) # 9
-            is_geolocation = search_geolocation(parse_file(file_path)) # 10
             # check if the package was already processed
             if package_name not in visited_packages: 
                 logging.info(f'package_name: {package_name}') 
                 logging.debug(f"{package_name} was not visit yet")
                 index = dirname.find("/package")
                 logging.debug(f"dirname[:index]: {dirname[:index]}")
+                is_geolocation = search_geolocation(dirname[:index]) # 10
                 is_minified_code = search_minified_code(dirname[:index]) # 11
                 is_has_no_content = search_packages_with_no_content(dirname[:index]) # 12
                 longest_line = longest_line_in_the_package(dirname[:index]) # 13
@@ -387,6 +387,7 @@ def extract_features(root_dir: str, malicious) -> None:
                 visited_packages.add(package_name)
             else:
                 logging.debug(f"package_features: {package_features}")
+                is_geolocation = package_features[package_name][10]
                 is_minified_code = package_features[package_name][11]
                 is_has_no_content = package_features[package_name][12]
                 longest_line = package_features[package_name][13] 
@@ -403,14 +404,14 @@ def extract_features(root_dir: str, malicious) -> None:
             # get the old feature list for the current package name
             old_inner_lst = package_features[package_name]
             
-            logging.debug(f'new_inner_lst: {new_inner_lst[2:-6]}')
-            logging.debug(f'old_inner_lst: {old_inner_lst[2:-6]}')
+            logging.debug(f'new_inner_lst: {new_inner_lst[2:-7]}')
+            logging.debug(f'old_inner_lst: {old_inner_lst[2:-7]}')
             # perform the bitwise operation between the new and old feature lists
-            updated_inner_lst = bitwise_operation(new_inner_lst[2:-6], old_inner_lst[2:-6], '|')
+            updated_inner_lst = bitwise_operation(new_inner_lst[2:-7], old_inner_lst[2:-7], '|')
             logging.debug(f'updated_inner_lst: {updated_inner_lst}')
             
             pre_list = [name, version]
-            past_list = [is_minified_code, is_has_no_content, longest_line, num_of_files, has_license, label]
+            past_list = [is_geolocation, is_minified_code, is_has_no_content, longest_line, num_of_files, has_license, label]
             
             # update the value in the package_features dictionary with the updated feature list
             package_features[package_name] = pre_list + updated_inner_lst + past_list

@@ -41,7 +41,7 @@ def parse_file(file_name):
     root_node = tree.root_node
     return root_node
 
-def search_keyword_in_code(root_node, keywords, sub_keywords) -> bool:
+def search_keyword_in_package(root_node, keywords, sub_keywords) -> bool:
     """
     This function searches for a keyword or sub keyword in the code using a provided root node.
     
@@ -57,10 +57,10 @@ def search_keyword_in_code(root_node, keywords, sub_keywords) -> bool:
         * current situation: the function stops after the function finds the first match
         * what to improve: have to add the function the ability to count the number of occurrences of all keywords
     """
-    logging.debug(f"start func: search_keyword_in_code")
+    logging.debug(f"start func: search_keyword_in_package")
     found = False
     
-    for child in root_node.children:
+    for child in root_node.children:    
         # search if the child in one of the keywords
         logging.debug(f"child: {child.text.decode()}")
         if child.text.decode() in keywords:
@@ -81,12 +81,38 @@ def search_keyword_in_code(root_node, keywords, sub_keywords) -> bool:
         # recursion 
         if found == False:
             logging.debug("calling recursion")
-            found = search_keyword_in_code(child, keywords, sub_keywords)
+            found = search_keyword_in_package(child, keywords, sub_keywords)
             if found:
                 break
     
     logging.debug(f"results of search_keyword_in_code: {found}")
     return found
+
+import os
+
+def search_substring_in_package(directory_path: str, keywords: str) -> int:
+    """
+    This function searches for a keyword in the files within a directory.
+    
+    Parameters:
+        directory_path (str): The path to the directory.
+        keyword (list of str): A list of keywords to search for.
+    
+    Returns:
+        int: 1 if the keyword is found in any of the files, 0 otherwise.
+    """
+    logging.debug(f"start func: search_substring_in_package")
+    logging.info(f"directory_path: {directory_path}")
+    for dirpath, dirnames, filenames in os.walk(directory_path):
+        for filename in filenames:
+            file_path = os.path.join(dirpath, filename)
+            if filename.endswith(".js") or filename.endswith(".ts"):
+                with open(file_path, "r") as file:
+                    file_content = file.read()
+                    for keyword in keywords:
+                        if keyword in file_content:
+                            return 1
+    return 0
 
 def bitwise_operation(list1, list2, operation) -> list:
     """
@@ -127,7 +153,7 @@ def general_search(root_node,keywords) -> Literal[1, 0]:
         sub_keywords[index] = [keyword, []]
 
     is_using = 0
-    if search_keyword_in_code(root_node, keywords, sub_keywords):
+    if search_keyword_in_package(root_node, keywords, sub_keywords):
         is_using = 1
     
     return is_using 
