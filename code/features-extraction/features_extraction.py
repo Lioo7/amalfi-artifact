@@ -422,7 +422,7 @@ def extract_features(root_dir: str, malicious) -> None:
     'no_content', 'longest_line', 'num_of_files', 'has_license', 'label']
     
     # define the path for the output CSV file
-    csv_file = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/dataset/dataset-train.csv'
+    csv_file = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/dataset/dataset-validation.csv'
     
     # decide whether to write the data in append mode or write mode based on the input malicious flag
     method = 'a' if malicious else "w"
@@ -435,8 +435,8 @@ def extract_features(root_dir: str, malicious) -> None:
     
 
 if __name__ == '__main__':
-    benign_path = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/extracted-packages/training_data/benign'
-    malicious_path = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/extracted-packages/training_data/malicious'
+    benign_path = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/extracted-packages/validation_data/benign'
+    malicious_path = '/Users/liozakirav/Documents/computer-science/fourth-year/Cyber/Tasks/Final-Project/amalfi-artifact/data/extracted-packages/validation_data/malicious'
     extract_features(benign_path, malicious=False)
     extract_features(malicious_path, malicious=True)
     
